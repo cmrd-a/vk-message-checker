@@ -71,19 +71,29 @@ export function parseUnreadCount(diffResponseJson) {
 	return Number.isFinite(total) ? total : -1;
 }
 
+// Fields list copied verbatim from the captured request (most of it is
+// unused by our parsing - photos, online status, etc. - but trimming it
+// turned out to matter: an earlier, shorter version silently returned an
+// empty conversation list, most likely because of the missing start_from
+// below rather than this, but there's no way to test the two independently
+// without another live capture, so both are kept faithful to the original).
+const ITEMS_FIELDS = "id,first_name,first_name_gen,first_name_acc,first_name_ins,first_name_dat,last_name,last_name_gen,last_name_acc,last_name_ins,sex,has_photo,photo_id,photo_50,photo_100,photo_200,contact_name,occupation,bdate,city,screen_name,online_info,verified,blacklisted,blacklisted_by_me,language,can_call,can_write_private_message,can_send_friend_request,can_invite_to_chats,friend_status,followers_count,profile_type,contacts,employee_mark,employee_working_state,is_service_account,image_status,photo_base,educational_profile,edu_roles,is_followers_mode_on,name,type,members_count,member_status,is_closed,can_message,deactivated,activity,ban_info,is_messages_blocked,can_send_notify,can_post_donut,site,reposts_disabled,description,action_button,menu,role,unread_count,wall,can_manage,disallow_manage_reason,age_limits,warning_notification";
+
 // Body for messages.getItems (conversation previews for the popup list).
-// The captured request's `fields` list was much longer (photos, online
-// status, etc.) - trimmed here to just what building a sender label needs.
+// start_from is the "give me the first page" cursor the captured request
+// used - it's not just an optional continuation token, omitting it was
+// most likely why the popup list came back empty.
 export function itemsRequestBody(accessToken) {
 	return new URLSearchParams({
 		access_token: accessToken,
 		v: API_VERSION,
 		app_id: CLIENT_ID,
 		filter: "all",
+		start_from: "conversations_0,channels_0_0",
 		extended: "1",
 		target_count: "40",
 		group_id: "0",
-		fields: "first_name,last_name,name",
+		fields: ITEMS_FIELDS,
 	}).toString();
 }
 

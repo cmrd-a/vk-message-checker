@@ -310,12 +310,9 @@ async function fetchAccessToken() {
 	return { token: extractAccessToken(html), empty: false };
 }
 
-// -3 disconnected, -2 logged out, -1 unknown response, 0+ unread count.
-async function fetchUnreadCount(prefs) {
-	const { token, empty } = await fetchAccessToken();
-	if (empty) { return -3; }
-	if (!token) { return -2; }
-
+// -1 unknown response, 0+ unread count. Distinct from the -3/-2 page-level
+// states, which fetchAccessToken already covers.
+async function fetchUnreadCount(token) {
 	const body = diffRequestBody(token);
 	const responseText = await fetchText("POST", apiRequestURL("messages.getDiff"), body);
 	let json;
@@ -330,11 +327,8 @@ async function fetchUnreadCount(prefs) {
 	return parseUnreadCount(json);
 }
 
-// Fetch conversation previews for the popup.
-async function getMessages(prefs) {
-	const { token } = await fetchAccessToken();
-	if (!token) { return []; }
-
+// Fetch conversation previews (used by both the popup and notifications).
+async function fetchConversationItems(token) {
 	const body = itemsRequestBody(token);
 	const responseText = await fetchText("POST", apiRequestURL("messages.getItems"), body);
 	let json;
@@ -344,9 +338,70 @@ async function getMessages(prefs) {
 		return [];
 	}
 	if (json.error) { return []; }
+	return parseConversationItems(json);
+}
 
-	const messages = parseConversationItems(json);
+// Fetch conversation previews for the popup.
+async function getMessages(prefs) {
+	const { token } = await fetchAccessToken();
+	if (!token) { return []; }
+	const messages = await fetchConversationItems(token);
 	return prefs.showOnlyUnreadInPopup ? messages.filter(m => m.isUnread) : messages;
+}
+
+// Chrome auto-assigns a unique id when notificationId is omitted, so each
+// call here produces its own separate, stacked notification rather than
+// replacing/merging with the previous one - important for showing distinct
+// senders as distinct notifications instead of collapsing them into one.
+function createNotification(title, message, prefs, useSystemSound) {
+	chrome.notifications.create({
+		type: "basic",
+		iconUrl: chrome.runtime.getURL("icons/c128.png"),
+		title,
+		message,
+		silent: !useSystemSound // "default" plays the system sound; other choices are played ourselves (or muted)
+	});
+}
+
+// Cap how many individual notifications one check can fire, so a long
+// offline stretch (count jumping by a lot) doesn't paper the screen with
+// desktop notifications - the rest are summarized in one extra line.
+const MAX_INDIVIDUAL_NOTIFICATIONS = 4;
+
+// Fire one notification per newly-arrived unread message (each from a
+// distinct sender shows as its own notification, not merged into one),
+// using the actual sender/text when we can fetch it. Falls back to a
+// single generic "Unread (N)" notification if that lookup comes back
+// empty (e.g. the new messages are in a category messages.getItems
+// doesn't surface as unread the same way messages.getDiff's counters do).
+async function notifyNewMessages(token, count, prefs) {
+	const useSystemSound = prefs.notificationSound === "default";
+	const delta = Math.max(1, count - lastUnreadCount);
+
+	let newItems = [];
+	try {
+		const items = await fetchConversationItems(token);
+		// Conversations come back sorted newest-active-first, so the first
+		// `delta` unread ones are our best guess at "what's new since last check".
+		newItems = items.filter(m => m.isUnread).slice(0, delta);
+	} catch {
+		// Fall through to the generic notification below.
+	}
+
+	if (newItems.length === 0) {
+		createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), prefs, useSystemSound);
+	} else {
+		newItems.slice(0, MAX_INDIVIDUAL_NOTIFICATIONS).forEach(item => {
+			createNotification(item.sender || t("appName") || "VK Messages", item.subject || t("statusUnread", [String(count)]), prefs, useSystemSound);
+		});
+		if (newItems.length > MAX_INDIVIDUAL_NOTIFICATIONS) {
+			createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), prefs, useSystemSound);
+		}
+	}
+
+	if (!useSystemSound && prefs.notificationSound !== "none") {
+		playNotificationSound(prefs.notificationSound);
+	}
 }
 
 // Run a single check and reflect the result on the toolbar icon.
@@ -361,7 +416,13 @@ async function checkNow(showProgress = true) {
 		prefs = await getPreference();
 		await loadMessages(prefs);
 		if (showProgress) { setChecking(); }
-		const count = await fetchUnreadCount(prefs);
+
+		const { token, empty } = await fetchAccessToken();
+		let count;
+		if (empty) { count = -3; }
+		else if (!token) { count = -2; }
+		else { count = await fetchUnreadCount(token); }
+
 		if (count === -3) {
 			applyState("disconnected", 0, prefs);
 		} else if (count === -2) {
@@ -377,17 +438,7 @@ async function checkNow(showProgress = true) {
 				const quiet = isQuietHours(prefs);
 				if (prefs.flashIconOnNewMail && !quiet) { flashIcon(); }
 				if (prefs.enableNotifications && !quiet) {
-					const useSystemSound = prefs.notificationSound === "default";
-					chrome.notifications.create({
-						type: "basic",
-						iconUrl: chrome.runtime.getURL("icons/c128.png"),
-						title: t("appName") || "VK Messages",
-						message: t("statusUnread", [String(count)]),
-						silent: !useSystemSound // "default" plays the system sound; other choices are played ourselves (or muted)
-					});
-					if (!useSystemSound && prefs.notificationSound !== "none") {
-						playNotificationSound(prefs.notificationSound);
-					}
+					await notifyNewMessages(token, count, prefs);
 				}
 			}
 		}

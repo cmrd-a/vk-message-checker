@@ -319,6 +319,107 @@ describe('background.js', () => {
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "?" });
   });
 
+  test('checkNow shows the actual sender/message text in the notification for a new message', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue("{}")
+    });
+
+    // Establish a baseline unread count first, so the next check sees an increase.
+    vkMock.parseUnreadCount.mockReturnValue(2);
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Now simulate a new message arriving.
+    vkMock.parseUnreadCount.mockReturnValue(5);
+    vkMock.parseConversationItems.mockReturnValue([
+      { isUnread: true, sender: 'Alice Ivanova', subject: 'Hey, are you free?', href: 'http://mock.test/im?sel=1' },
+      { isUnread: false, sender: 'Bob', subject: 'old message', href: 'http://mock.test/im?sel=2' },
+    ]);
+
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(chrome.notifications.create).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Alice Ivanova',
+      message: 'Hey, are you free?',
+    }));
+
+    vkMock.parseConversationItems.mockReturnValue([]);
+  });
+
+  test('checkNow fires a separate notification per new message instead of grouping them', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue("{}")
+    });
+
+    // Baseline: 1 unread.
+    vkMock.parseUnreadCount.mockReturnValue(1);
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Two new messages arrive, from two different senders.
+    vkMock.parseUnreadCount.mockReturnValue(3);
+    vkMock.parseConversationItems.mockReturnValue([
+      { isUnread: true, sender: 'Alice Ivanova', subject: 'First new message', href: 'http://mock.test/im?sel=1' },
+      { isUnread: true, sender: 'Community Group', subject: 'Second new message', href: 'http://mock.test/im?sel=2' },
+      { isUnread: false, sender: 'Bob', subject: 'already read', href: 'http://mock.test/im?sel=3' },
+    ]);
+
+    chrome.notifications.create.mockClear();
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Two separate notification calls (each gets its own auto-assigned id,
+    // so they stack instead of collapsing into a single one), not one call
+    // that merges both senders together.
+    expect(chrome.notifications.create).toHaveBeenCalledTimes(2);
+    expect(chrome.notifications.create).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      title: 'Alice Ivanova',
+      message: 'First new message',
+    }));
+    expect(chrome.notifications.create).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      title: 'Community Group',
+      message: 'Second new message',
+    }));
+
+    vkMock.parseConversationItems.mockReturnValue([]);
+  });
+
+  test('checkNow falls back to the generic notification text when no unread item is found', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue("{}")
+    });
+
+    vkMock.parseUnreadCount.mockReturnValue(1);
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    vkMock.parseUnreadCount.mockReturnValue(3);
+    vkMock.parseConversationItems.mockReturnValue([]); // getItems didn't surface a matching unread item
+
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Falls back to the generic "statusUnread" text (the real locale string
+    // isn't loaded in this test harness) rather than a specific sender/message.
+    expect(chrome.notifications.create).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'appName',
+      message: 'statusUnread',
+    }));
+  });
+
   test('open creates new tab', async () => {
     chrome.storage.local.get.mockResolvedValue({ preference: { openBehavior: 1, resetCounter: false } });
     chrome.tabs.query.mockResolvedValue([]); // No matching tabs

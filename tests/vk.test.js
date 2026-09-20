@@ -45,10 +45,13 @@ describe('request body builders', () => {
         expect(body.get('conversations_limit')).toBe('0');
     });
 
-    it('itemsRequestBody includes the access token and a fields list', () => {
+    it('itemsRequestBody includes the access token, start_from cursor and a fields list', () => {
         const body = new URLSearchParams(itemsRequestBody('TOKEN123'));
         expect(body.get('access_token')).toBe('TOKEN123');
         expect(body.get('extended')).toBe('1');
+        // Matches the captured request exactly - omitting this previously
+        // made messages.getItems come back with an empty conversation list.
+        expect(body.get('start_from')).toBe('conversations_0,channels_0_0');
         expect(body.get('fields')).toContain('first_name');
     });
 });
