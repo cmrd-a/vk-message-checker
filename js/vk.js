@@ -105,13 +105,6 @@ function isConversationUnread(conversation, lastMessage) {
 	return conversation.last_message_id > conversation.in_read;
 }
 
-// The user/group record for a peer, from the profiles/groups arrays
-// messages.getItems returns alongside the conversation list (extended: 1).
-function findProfile(peer, profiles, groups) {
-	if (peer.type === "user") { return profiles.find(p => p.id === peer.id) || null; }
-	if (peer.type === "group") { return groups.find(g => g.id === Math.abs(peer.id)) || null; }
-	return null;
-}
 
 function senderLabel(peer, profile) {
 	if (!profile) { return null; }
@@ -138,10 +131,27 @@ export function parseConversationItems(itemsResponseJson) {
 	const profiles = response.profiles || [];
 	const groups = response.groups || [];
 
+	const profileMap = new Map();
+	for (let i = 0; i < profiles.length; i++) {
+		profileMap.set(profiles[i].id, profiles[i]);
+	}
+
+	const groupMap = new Map();
+	for (let i = 0; i < groups.length; i++) {
+		groupMap.set(groups[i].id, groups[i]);
+	}
+
 	return items.map(item => {
 		const { conversation, last_message: lastMessage } = item;
 		const peer = conversation.peer;
-		const profile = findProfile(peer, profiles, groups);
+
+		let profile = null;
+		if (peer.type === "user") {
+			profile = profileMap.get(peer.id) || null;
+		} else if (peer.type === "group") {
+			profile = groupMap.get(Math.abs(peer.id)) || null;
+		}
+
 		const sender = senderLabel(peer, profile) || `id${peer.id}`;
 
 		return {
