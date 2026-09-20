@@ -428,6 +428,40 @@ describe('background.js', () => {
     vkMock.parseConversationItems.mockReturnValue([]);
   });
 
+  test('checkNow notifies every new sender individually, with no cap or summary', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue("{}")
+    });
+
+    // Baseline: 0 unread.
+    vkMock.parseUnreadCount.mockReturnValue(0);
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Six new messages arrive at once, from six different senders.
+    const senders = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+    vkMock.parseUnreadCount.mockReturnValue(6);
+    vkMock.parseConversationItems.mockReturnValue(
+      senders.map((sender, i) => ({ isUnread: true, sender, subject: `msg ${i}`, href: `http://mock.test/im?sel=${i}` }))
+    );
+
+    chrome.notifications.create.mockClear();
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // One call per sender, none dropped or rolled up into a summary.
+    expect(chrome.notifications.create).toHaveBeenCalledTimes(senders.length);
+    senders.forEach((sender, i) => {
+      expect(chrome.notifications.create).toHaveBeenNthCalledWith(i + 1, expect.objectContaining({ title: sender }));
+    });
+
+    vkMock.parseConversationItems.mockReturnValue([]);
+  });
+
   test('checkNow falls back to the generic notification text when no unread item is found', async () => {
     chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
     vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');

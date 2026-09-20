@@ -383,17 +383,12 @@ function createNotification(title, message, iconUrl, prefs, useSystemSound) {
 	});
 }
 
-// Cap how many individual notifications one check can fire, so a long
-// offline stretch (count jumping by a lot) doesn't paper the screen with
-// desktop notifications - the rest are summarized in one extra line.
-const MAX_INDIVIDUAL_NOTIFICATIONS = 4;
-
-// Fire one notification per newly-arrived unread message (each from a
-// distinct sender shows as its own notification, not merged into one),
-// using the actual sender/text when we can fetch it. Falls back to a
-// single generic "Unread (N)" notification if that lookup comes back
-// empty (e.g. the new messages are in a category messages.getItems
-// doesn't surface as unread the same way messages.getDiff's counters do).
+// Fire one notification per newly-arrived unread message - every sender
+// gets their own, none summarized away - using the actual sender/text/
+// avatar when we can fetch it. Falls back to a single generic
+// "Unread (N)" notification if that lookup comes back empty (e.g. the
+// new messages are in a category messages.getItems doesn't surface as
+// unread the same way messages.getDiff's counters do).
 async function notifyNewMessages(token, count, prefs) {
 	const useSystemSound = prefs.notificationSound === "default";
 	const delta = Math.max(1, count - lastUnreadCount);
@@ -411,12 +406,9 @@ async function notifyNewMessages(token, count, prefs) {
 	if (newItems.length === 0) {
 		createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), null, prefs, useSystemSound);
 	} else {
-		for (const item of newItems.slice(0, MAX_INDIVIDUAL_NOTIFICATIONS)) {
+		for (const item of newItems) {
 			const iconUrl = await fetchAvatarDataURL(item.avatarUrl);
 			createNotification(item.sender || t("appName") || "VK Messages", item.subject || t("statusUnread", [String(count)]), iconUrl, prefs, useSystemSound);
-		}
-		if (newItems.length > MAX_INDIVIDUAL_NOTIFICATIONS) {
-			createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), null, prefs, useSystemSound);
 		}
 	}
 
