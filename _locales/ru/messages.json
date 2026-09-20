@@ -1,0 +1,89 @@
+{
+   "description": {
+      "message": "Проверка новых сообщений VK без захода на vk.ru."
+   },
+   "appName": {
+      "message": "Сообщения VK"
+   },
+   "name": {
+      "message": "Проверка сообщений VK"
+   },
+
+   "save": { "message": "Сохранить" },
+   "saved": { "message": "Сохранено" },
+   "checkNow": { "message": "Проверить сейчас" },
+   "openApp": { "message": "Открыть VK" },
+   "loading": { "message": "Загрузка..." },
+
+   "optionsTitle": { "message": "Настройки" },
+   "langLegend": { "message": "Язык" },
+   "langAuto": { "message": "Автоматически (браузер)" },
+
+   "checkingLegend": { "message": "Проверка сообщений" },
+   "showOnlyUnreadInPopupOpt": { "message": "Показывать в попапе только непрочитанные сообщения" },
+
+   "notificationsLegend": { "message": "Уведомления" },
+   "enableNotifications": { "message": "Показывать уведомление о новых сообщениях" },
+   "flashIcon": { "message": "Мигать иконкой при новых сообщениях" },
+   "notificationSoundLabel": { "message": "Звук уведомления" },
+   "soundDefault": { "message": "Системный (по умолчанию)" },
+   "soundChime": { "message": "Перезвон" },
+   "soundBell": { "message": "Колокольчик" },
+   "soundNone": { "message": "Без звука" },
+   "quietHoursEnabledOpt": { "message": "Тихие часы (без звука и уведомлений)" },
+   "quietHoursTo": { "message": "до" },
+
+   "autoCheckLegend": { "message": "Автопроверка" },
+   "often": { "message": "Часто" },
+   "never": { "message": "Никогда" },
+   "checkEvery": {
+      "message": "Проверять каждые: $INTERVAL$",
+      "placeholders": { "interval": { "content": "$1" } }
+   },
+   "minutesShort": { "message": "мин" },
+   "hoursShort": { "message": "ч" },
+   "autoCheckWarning": { "message": "Предупреждение: проверка чаще, чем раз в 3 минуты, может перегрузить VK." },
+
+   "toolbarLegend": { "message": "Иконка на панели" },
+   "showCounter": { "message": "Показывать счётчик на кнопке" },
+   "showMenu": { "message": "Показывать меню по клику" },
+   "clickBehavior": { "message": "Одиночный клик — открыть VK / двойной — проверить" },
+
+   "openingLegend": { "message": "Открытие VK" },
+   "resetCounterOpt": { "message": "Сбрасывать счётчик при открытии VK" },
+   "reuseTab": { "message": "Сначала использовать существующую вкладку VK" },
+   "openCurrent": { "message": "Открывать в текущей вкладке" },
+   "openNew": { "message": "Открывать в новой вкладке" },
+   "openBackground": { "message": "Открывать в новой фоновой вкладке" },
+
+   "statusChecking": { "message": "Проверка..." },
+   "statusUnread": {
+      "message": "Непрочитанных ($N$)",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+   "statusEmpty": { "message": "Нет непрочитанных сообщений" },
+   "statusLoggedOut": { "message": "Вы вышли из аккаунта" },
+   "statusDisconnected": { "message": "Нет соединения" },
+   "statusTimeout": { "message": "Превышено время ожидания" },
+   "statusUnknown": { "message": "Нераспознанный ответ" },
+
+   "lastChecked": {
+      "message": "Проверено $TIME$",
+      "placeholders": { "time": { "content": "$1" } }
+   },
+   "justNow": { "message": "только что" },
+   "minutesAgo": {
+      "message": "$N$ мин назад",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+   "hoursAgo": {
+      "message": "$N$ ч назад",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+
+   "aboutTitle": { "message": "О расширении" },
+   "versionLabel": {
+      "message": "Версия $V$",
+      "placeholders": { "v": { "content": "$1" } }
+   }
+}

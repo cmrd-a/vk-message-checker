@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title data-i18n="optionsTitle">Options</title>
+		<link type="text/css" rel="stylesheet" href="../css/options.css" />
+		<script src="../js/i18n.js" defer></script>
+		<script type="module" src="../js/options.js" defer></script>
+	</head>
+	<body>
+		<div class="page">
+			<header class="app-header">
+				<img class="app-icon" src="../icons/c48.png" alt="" />
+				<h1 id="name"></h1>
+			</header>
+
+			<main>
+				<section class="card">
+					<h2 data-i18n="langLegend">Language</h2>
+					<select id="lang" class="select">
+						<option value="auto" data-i18n="langAuto">Automatic (browser)</option>
+						<option value="en">English</option>
+						<option value="ru">Русский</option>
+					</select>
+				</section>
+
+				<section class="card">
+					<h2 data-i18n="checkingLegend">Message Checking</h2>
+					<label class="field">
+						<input type="checkbox" id="showOnlyUnreadInPopup" />
+						<span data-i18n="showOnlyUnreadInPopupOpt">Show only unread messages in the popup list</span>
+					</label>
+				</section>
+
+				<section class="card">
+					<h2 data-i18n="notificationsLegend">Notifications</h2>
+					<label class="field">
+						<input type="checkbox" id="enableNotifications" />
+						<span data-i18n="enableNotifications">Show desktop notification for new messages</span>
+					</label>
+					<label class="field">
+						<input type="checkbox" id="flashIconOnNewMail" />
+						<span data-i18n="flashIcon">Flash the toolbar icon when new messages arrive</span>
+					</label>
+					<div class="field-block">
+						<label class="field-label" for="notificationSound" data-i18n="notificationSoundLabel">Notification sound</label>
+						<select id="notificationSound" class="select">
+							<option value="default" data-i18n="soundDefault">Default (system)</option>
+							<option value="chime" data-i18n="soundChime">Chime</option>
+							<option value="bell" data-i18n="soundBell">Bell</option>
+							<option value="none" data-i18n="soundNone">None</option>
+						</select>
+					</div>
+					<label class="field">
+						<input type="checkbox" id="quietHoursEnabled" />
+						<span data-i18n="quietHoursEnabledOpt">Quiet hours (no sound or notification)</span>
+					</label>
+					<div class="range-row" id="quietHoursRow">
+						<input type="time" id="quietHoursStart" class="time-input" />
+						<span class="range-edge" data-i18n="quietHoursTo">to</span>
+						<input type="time" id="quietHoursEnd" class="time-input" />
+					</div>
+				</section>
+
+				<section class="card">
+					<h2 data-i18n="autoCheckLegend">Auto-check</h2>
+					<div class="range-row">
+						<span class="range-edge" data-i18n="often">Often</span>
+						<input id="autoCheckRange" type="range" min="1" max="181" step="1" />
+						<span class="range-edge" data-i18n="never">Never</span>
+					</div>
+					<div id="autoCheckText" class="hint hint-strong"></div>
+					<p class="hint" data-i18n="autoCheckWarning">Warning: checking more often than every 3 minutes may overload VK.</p>
+				</section>
+
+				<section class="card">
+					<h2 data-i18n="toolbarLegend">Toolbar Icon</h2>
+					<label class="field">
+						<input type="checkbox" id="showToolbarNumber" />
+						<span data-i18n="showCounter">Show counter on toolbar button</span>
+					</label>
+					<label class="field">
+						<input type="radio" name="iconClick" id="showPopup" />
+						<span data-i18n="showMenu">Show menu on click</span>
+					</label>
+					<label class="field">
+						<input type="radio" name="iconClick" id="noPopup" />
+						<span data-i18n="clickBehavior">Single click: open VK / Double click: check now</span>
+					</label>
+				</section>
+
+				<section class="card">
+					<h2 data-i18n="openingLegend">Opening VK</h2>
+					<label class="field">
+						<input type="checkbox" id="resetCounter" />
+						<span data-i18n="resetCounterOpt">Reset counter upon opening VK</span>
+					</label>
+					<label class="field">
+						<input type="checkbox" id="reUseExistingTab" />
+						<span data-i18n="reuseTab">Reuse existing VK tab first</span>
+					</label>
+					<label class="field">
+						<input type="radio" name="openBehavior" id="openInCurrentTab" />
+						<span data-i18n="openCurrent">Open in current tab</span>
+					</label>
+					<label class="field">
+						<input type="radio" name="openBehavior" id="openInNewTab" />
+						<span data-i18n="openNew">Open in new tab</span>
+					</label>
+					<label class="field">
+						<input type="radio" name="openBehavior" id="openInNewBackgroundTab" />
+						<span data-i18n="openBackground">Open in new background tab</span>
+					</label>
+				</section>
+
+				<section class="card about">
+					<h2 data-i18n="aboutTitle">About</h2>
+					<div class="about-row">
+						<img class="about-icon" src="../icons/c48.png" alt="" />
+						<div class="about-meta">
+							<div class="about-name" id="aboutName"></div>
+							<div class="about-version hint" id="aboutVersion"></div>
+						</div>
+					</div>
+				</section>
+			</main>
+		</div>
+
+		<footer class="save-bar">
+			<button type="button" id="save" class="btn-primary" data-i18n="save">Save</button>
+			<span id="status" class="status"></span>
+		</footer>
+	</body>
+</html>

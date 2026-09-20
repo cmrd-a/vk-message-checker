@@ -1,0 +1,28 @@
+{
+   "background": {
+      "service_worker": "js/background.js",
+      "type": "module"
+   },
+   "action": {
+      "default_icon": {
+         "19": "icons/c19.png",
+         "38": "icons/c38.png"
+      },
+      "default_title": "__MSG_name__"
+   },
+   "default_locale": "en",
+   "description": "__MSG_description__",
+   "icons": {
+      "128": "icons/c128.png",
+      "16": "icons/c16.png",
+      "48": "icons/c48.png"
+   },
+   "incognito": "split",
+   "manifest_version": 3,
+   "minimum_chrome_version": "116",
+   "name": "__MSG_name__",
+   "options_page": "html/options.html",
+   "permissions": [ "tabs", "storage", "alarms", "notifications", "offscreen" ],
+   "host_permissions": [ "*://*.vk.ru/*", "*://*.vk.com/*" ],
+   "version": "0.1.0"
+}

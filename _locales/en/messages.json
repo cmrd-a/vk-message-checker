@@ -1,0 +1,89 @@
+{
+   "description": {
+      "message": "Check new VK messages without opening vk.ru."
+   },
+   "appName": {
+      "message": "VK Messages"
+   },
+   "name": {
+      "message": "VK Message Checker"
+   },
+
+   "save": { "message": "Save" },
+   "saved": { "message": "Saved" },
+   "checkNow": { "message": "Check now" },
+   "openApp": { "message": "Open VK" },
+   "loading": { "message": "Loading..." },
+
+   "optionsTitle": { "message": "Options" },
+   "langLegend": { "message": "Language" },
+   "langAuto": { "message": "Automatic (browser)" },
+
+   "checkingLegend": { "message": "Message Checking" },
+   "showOnlyUnreadInPopupOpt": { "message": "Show only unread messages in the popup list" },
+
+   "notificationsLegend": { "message": "Notifications" },
+   "enableNotifications": { "message": "Show desktop notification for new messages" },
+   "flashIcon": { "message": "Flash the toolbar icon when new messages arrive" },
+   "notificationSoundLabel": { "message": "Notification sound" },
+   "soundDefault": { "message": "Default (system)" },
+   "soundChime": { "message": "Chime" },
+   "soundBell": { "message": "Bell" },
+   "soundNone": { "message": "None" },
+   "quietHoursEnabledOpt": { "message": "Quiet hours (no sound or notification)" },
+   "quietHoursTo": { "message": "to" },
+
+   "autoCheckLegend": { "message": "Auto-check" },
+   "often": { "message": "Often" },
+   "never": { "message": "Never" },
+   "checkEvery": {
+      "message": "Check every: $INTERVAL$",
+      "placeholders": { "interval": { "content": "$1" } }
+   },
+   "minutesShort": { "message": "min" },
+   "hoursShort": { "message": "h" },
+   "autoCheckWarning": { "message": "Warning: checking more often than every 3 minutes may overload VK." },
+
+   "toolbarLegend": { "message": "Toolbar Icon" },
+   "showCounter": { "message": "Show counter on toolbar button" },
+   "showMenu": { "message": "Show menu on click" },
+   "clickBehavior": { "message": "Single click: open VK / Double click: check now" },
+
+   "openingLegend": { "message": "Opening VK" },
+   "resetCounterOpt": { "message": "Reset counter upon opening VK" },
+   "reuseTab": { "message": "Reuse existing VK tab first" },
+   "openCurrent": { "message": "Open in current tab" },
+   "openNew": { "message": "Open in new tab" },
+   "openBackground": { "message": "Open in new background tab" },
+
+   "statusChecking": { "message": "Checking..." },
+   "statusUnread": {
+      "message": "Unread ($N$)",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+   "statusEmpty": { "message": "No unread messages" },
+   "statusLoggedOut": { "message": "Logged out" },
+   "statusDisconnected": { "message": "Not connected" },
+   "statusTimeout": { "message": "Request timeout" },
+   "statusUnknown": { "message": "Unrecognized response" },
+
+   "lastChecked": {
+      "message": "Checked $TIME$",
+      "placeholders": { "time": { "content": "$1" } }
+   },
+   "justNow": { "message": "just now" },
+   "minutesAgo": {
+      "message": "$N$m ago",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+   "hoursAgo": {
+      "message": "$N$h ago",
+      "placeholders": { "n": { "content": "$1" } }
+   },
+
+   "aboutTitle": { "message": "About" },
+   "versionLabel": {
+      "message": "Version $V$",
+      "placeholders": { "v": { "content": "$1" } }
+   }
+}
