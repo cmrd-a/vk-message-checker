@@ -119,11 +119,11 @@ describe('parseConversationItems', () => {
                 ],
             },
             profiles: [
-                { id: 111, first_name: 'Alice', last_name: 'Ivanova' },
+                { id: 111, first_name: 'Alice', last_name: 'Ivanova', photo_50: 'https://example.com/alice_50.jpg', photo_100: 'https://example.com/alice_100.jpg' },
                 { id: 222, first_name: 'Bob', last_name: 'Petrov' },
             ],
             groups: [
-                { id: 333, name: 'Some Community' },
+                { id: 333, name: 'Some Community', photo_100: 'https://example.com/community_100.jpg' },
             ],
         },
     };
@@ -146,6 +146,13 @@ describe('parseConversationItems', () => {
         const result = parseConversationItems(baseResponse);
         expect(result[2].isUnread).toBe(true);
         expect(result[2].sender).toBe('Some Community');
+    });
+
+    it('prefers photo_100 for the avatar URL, and returns null when there is no photo', () => {
+        const result = parseConversationItems(baseResponse);
+        expect(result[0].avatarUrl).toBe('https://example.com/alice_100.jpg'); // has both 50 and 100
+        expect(result[1].avatarUrl).toBeNull(); // Bob has no photo fields in this fixture
+        expect(result[2].avatarUrl).toBe('https://example.com/community_100.jpg'); // group photo
     });
 
     it('returns an empty array for a malformed response', () => {

@@ -105,21 +105,30 @@ function isConversationUnread(conversation, lastMessage) {
 	return conversation.last_message_id > conversation.in_read;
 }
 
-function senderLabel(peer, profiles, groups) {
-	if (peer.type === "user") {
-		const profile = profiles.find(p => p.id === peer.id);
-		if (profile) { return `${profile.first_name || ""} ${profile.last_name || ""}`.trim(); }
-	} else if (peer.type === "group") {
-		const group = groups.find(g => g.id === Math.abs(peer.id));
-		if (group?.name) { return group.name; }
-	}
+// The user/group record for a peer, from the profiles/groups arrays
+// messages.getItems returns alongside the conversation list (extended: 1).
+function findProfile(peer, profiles, groups) {
+	if (peer.type === "user") { return profiles.find(p => p.id === peer.id) || null; }
+	if (peer.type === "group") { return groups.find(g => g.id === Math.abs(peer.id)) || null; }
 	return null;
 }
 
+function senderLabel(peer, profile) {
+	if (!profile) { return null; }
+	if (peer.type === "user") { return `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || null; }
+	if (peer.type === "group") { return profile.name || null; }
+	return null;
+}
+
+// photo_100 balances quality against the popup/notification's small avatar size.
+function senderAvatar(profile) {
+	return profile?.photo_100 || profile?.photo_50 || profile?.photo_200 || null;
+}
+
 // Parse messages.getItems into the popup's {isUnread, href, sender,
-// subject, snippet, actionField, actionValue} shape (subject carries the
-// last message preview; VK conversations don't have a separate subject
-// line). actionField/actionValue are left null - no delete/mark-read
+// subject, snippet, avatarUrl, actionField, actionValue} shape (subject
+// carries the last message preview; VK conversations don't have a separate
+// subject line). actionField/actionValue are left null - no delete/mark-read
 // action is wired up yet.
 export function parseConversationItems(itemsResponseJson) {
 	const response = itemsResponseJson?.response;
@@ -132,7 +141,8 @@ export function parseConversationItems(itemsResponseJson) {
 	return items.map(item => {
 		const { conversation, last_message: lastMessage } = item;
 		const peer = conversation.peer;
-		const sender = senderLabel(peer, profiles, groups) || `id${peer.id}`;
+		const profile = findProfile(peer, profiles, groups);
+		const sender = senderLabel(peer, profile) || `id${peer.id}`;
 
 		return {
 			isUnread: isConversationUnread(conversation, lastMessage),
@@ -140,6 +150,7 @@ export function parseConversationItems(itemsResponseJson) {
 			sender,
 			subject: lastMessage?.text || "",
 			snippet: "",
+			avatarUrl: senderAvatar(profile),
 			actionField: null,
 			actionValue: null,
 		};

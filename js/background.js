@@ -349,14 +349,34 @@ async function getMessages(prefs) {
 	return prefs.showOnlyUnreadInPopup ? messages.filter(m => m.isUnread) : messages;
 }
 
+// chrome.notifications' iconUrl does NOT accept a remote https:// URL
+// (unlike Firefox) - only extension-relative paths, data: URLs or blob:
+// URLs. To show a sender's real VK avatar we fetch it ourselves and
+// convert it to a data URL first. Requires *.vkuserphoto.ru in
+// host_permissions (VK's avatar CDN) or the fetch is cross-origin blocked.
+async function fetchAvatarDataURL(url) {
+	if (!url) { return null; }
+	try {
+		const response = await fetch(url);
+		if (!response.ok) { return null; }
+		const contentType = response.headers.get("content-type") || "image/jpeg";
+		const bytes = new Uint8Array(await response.arrayBuffer());
+		let binary = "";
+		for (let i = 0; i < bytes.length; i++) { binary += String.fromCharCode(bytes[i]); }
+		return `data:${contentType};base64,${btoa(binary)}`;
+	} catch {
+		return null;
+	}
+}
+
 // Chrome auto-assigns a unique id when notificationId is omitted, so each
 // call here produces its own separate, stacked notification rather than
 // replacing/merging with the previous one - important for showing distinct
 // senders as distinct notifications instead of collapsing them into one.
-function createNotification(title, message, prefs, useSystemSound) {
+function createNotification(title, message, iconUrl, prefs, useSystemSound) {
 	chrome.notifications.create({
 		type: "basic",
-		iconUrl: chrome.runtime.getURL("icons/c128.png"),
+		iconUrl: iconUrl || chrome.runtime.getURL("icons/c128.png"),
 		title,
 		message,
 		silent: !useSystemSound // "default" plays the system sound; other choices are played ourselves (or muted)
@@ -389,13 +409,14 @@ async function notifyNewMessages(token, count, prefs) {
 	}
 
 	if (newItems.length === 0) {
-		createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), prefs, useSystemSound);
+		createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), null, prefs, useSystemSound);
 	} else {
-		newItems.slice(0, MAX_INDIVIDUAL_NOTIFICATIONS).forEach(item => {
-			createNotification(item.sender || t("appName") || "VK Messages", item.subject || t("statusUnread", [String(count)]), prefs, useSystemSound);
-		});
+		for (const item of newItems.slice(0, MAX_INDIVIDUAL_NOTIFICATIONS)) {
+			const iconUrl = await fetchAvatarDataURL(item.avatarUrl);
+			createNotification(item.sender || t("appName") || "VK Messages", item.subject || t("statusUnread", [String(count)]), iconUrl, prefs, useSystemSound);
+		}
 		if (newItems.length > MAX_INDIVIDUAL_NOTIFICATIONS) {
-			createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), prefs, useSystemSound);
+			createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), null, prefs, useSystemSound);
 		}
 	}
 

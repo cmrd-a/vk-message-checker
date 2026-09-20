@@ -320,7 +320,7 @@ describe('background.js', () => {
   });
 
   test('checkNow shows the actual sender/message text in the notification for a new message', async () => {
-    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
     vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
 
     global.fetch.mockResolvedValue({
@@ -333,11 +333,12 @@ describe('background.js', () => {
     if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Now simulate a new message arriving.
+    // Now simulate a new message arriving. No avatarUrl here - that path is
+    // covered separately below.
     vkMock.parseUnreadCount.mockReturnValue(5);
     vkMock.parseConversationItems.mockReturnValue([
-      { isUnread: true, sender: 'Alice Ivanova', subject: 'Hey, are you free?', href: 'http://mock.test/im?sel=1' },
-      { isUnread: false, sender: 'Bob', subject: 'old message', href: 'http://mock.test/im?sel=2' },
+      { isUnread: true, sender: 'Alice Ivanova', subject: 'Hey, are you free?', href: 'http://mock.test/im?sel=1', avatarUrl: null },
+      { isUnread: false, sender: 'Bob', subject: 'old message', href: 'http://mock.test/im?sel=2', avatarUrl: null },
     ]);
 
     if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
@@ -351,8 +352,42 @@ describe('background.js', () => {
     vkMock.parseConversationItems.mockReturnValue([]);
   });
 
+  test('checkNow converts the sender avatar into a data URL for the notification icon', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    const genericResponse = { text: jest.fn().mockResolvedValue("{}") };
+    const avatarResponse = {
+      ok: true,
+      headers: { get: () => 'image/jpeg' },
+      arrayBuffer: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
+    };
+    global.fetch.mockImplementation((url) => Promise.resolve(
+      String(url).includes('avatar.jpg') ? avatarResponse : genericResponse
+    ));
+
+    vkMock.parseUnreadCount.mockReturnValue(1);
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    vkMock.parseUnreadCount.mockReturnValue(2);
+    vkMock.parseConversationItems.mockReturnValue([
+      { isUnread: true, sender: 'Alice Ivanova', subject: 'Hi', href: 'http://mock.test/im?sel=1', avatarUrl: 'https://example.com/avatar.jpg' },
+    ]);
+
+    if (onMessageListener) { onMessageListener({ type: "checkNow" }, {}, jest.fn()); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const call = chrome.notifications.create.mock.calls.find(([opts]) => opts.title === 'Alice Ivanova');
+    expect(call).toBeDefined();
+    expect(call[0].iconUrl).toMatch(/^data:image\/jpeg;base64,/);
+
+    vkMock.parseConversationItems.mockReturnValue([]);
+    global.fetch.mockResolvedValue({ text: jest.fn().mockResolvedValue("{}") });
+  });
+
   test('checkNow fires a separate notification per new message instead of grouping them', async () => {
-    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
     vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
 
     global.fetch.mockResolvedValue({
@@ -394,7 +429,7 @@ describe('background.js', () => {
   });
 
   test('checkNow falls back to the generic notification text when no unread item is found', async () => {
-    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none' } });
+    chrome.storage.local.get.mockResolvedValue({ preference: { enableNotifications: true, notificationSound: 'none', flashIconOnNewMail: false } });
     vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
 
     global.fetch.mockResolvedValue({
@@ -413,10 +448,12 @@ describe('background.js', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Falls back to the generic "statusUnread" text (the real locale string
-    // isn't loaded in this test harness) rather than a specific sender/message.
+    // isn't loaded in this test harness) and the extension's own icon
+    // rather than a specific sender/message/avatar.
     expect(chrome.notifications.create).toHaveBeenCalledWith(expect.objectContaining({
       title: 'appName',
       message: 'statusUnread',
+      iconUrl: 'chrome-extension://mock-id/icons/c128.png',
     }));
   });
 

@@ -13,12 +13,23 @@ function hashCode(str) {
 	return Math.abs(h);
 }
 
-// A colored circle with the sender's first initial, standing in for an avatar.
-function buildAvatar(name) {
+// A colored circle with the sender's first initial, standing in for an
+// avatar until/unless a real photo (avatarUrl) loads on top of it.
+function buildAvatar(name, avatarUrl) {
 	const avatar = document.createElement("div");
 	avatar.className = "msg-avatar";
 	avatar.style.background = AVATAR_COLORS[hashCode(name || "?") % AVATAR_COLORS.length];
 	avatar.textContent = (name || "?").trim().charAt(0).toUpperCase() || "?";
+
+	if (avatarUrl) {
+		const img = document.createElement("img");
+		img.className = "msg-avatar-img";
+		img.src = avatarUrl;
+		img.alt = "";
+		img.addEventListener("error", () => img.remove()); // leave the initial showing
+		avatar.appendChild(img);
+	}
+
 	return avatar;
 }
 
@@ -86,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			const header = document.createElement("div");
 			header.className = "msg-header";
-			header.appendChild(buildAvatar(msg.sender));
+			header.appendChild(buildAvatar(msg.sender, msg.avatarUrl));
 
 			const texts = document.createElement("div");
 			texts.className = "msg-texts";

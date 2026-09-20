@@ -23,6 +23,6 @@
    "name": "__MSG_name__",
    "options_page": "html/options.html",
    "permissions": [ "tabs", "storage", "alarms", "notifications", "offscreen" ],
-   "host_permissions": [ "*://*.vk.ru/*", "*://*.vk.com/*" ],
-   "version": "0.2.1"
+   "host_permissions": [ "*://*.vk.ru/*", "*://*.vk.com/*", "*://*.vkuserphoto.ru/*" ],
+   "version": "0.3.0"
 }
