@@ -267,6 +267,7 @@ describe('background.js', () => {
   });
 
   test('checkNow disconnected state (blank page response)', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(999999999999999);
     chrome.storage.local.get.mockResolvedValue({ preference: {} });
 
     global.fetch.mockResolvedValue({
@@ -284,6 +285,7 @@ describe('background.js', () => {
   });
 
   test('checkNow logged-out state (page loads but has no access token)', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(999999999999999);
     chrome.storage.local.get.mockResolvedValue({ preference: {} });
     vkMock.extractAccessToken.mockReturnValue(null);
 
@@ -302,6 +304,7 @@ describe('background.js', () => {
   });
 
   test('checkNow unknown state when the VK API returns an error', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(999999999999999);
     chrome.storage.local.get.mockResolvedValue({ preference: {} });
     vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
 

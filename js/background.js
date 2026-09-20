@@ -29,6 +29,8 @@ let i18nLang = null;
 let lastUnreadCount = -1;
 let lastCheckedAt = null;
 let flashTimer = null;
+let cachedToken = null;
+let tokenExpiresAt = 0;
 
 
 //================================================
@@ -305,9 +307,22 @@ export function isQuietHours(prefs, now = new Date()) {
 // page with no token in it (not logged in); throws (like any other fetch)
 // if the request itself fails.
 async function fetchAccessToken() {
+	if (cachedToken && Date.now() < tokenExpiresAt) {
+		return { token: cachedToken, empty: false };
+	}
 	const html = await fetchText("GET", messagesURL, null);
-	if (!html) { return { token: null, empty: true }; }
-	return { token: extractAccessToken(html), empty: false };
+	if (!html) {
+		cachedToken = null;
+		tokenExpiresAt = 0;
+		return { token: null, empty: true };
+	}
+	const token = extractAccessToken(html);
+	if (token) {
+		cachedToken = token;
+		// Cache for 30 minutes
+		tokenExpiresAt = Date.now() + 30 * 60 * 1000;
+	}
+	return { token, empty: false };
 }
 
 // -1 unknown response, 0+ unread count. Distinct from the -3/-2 page-level
@@ -439,6 +454,8 @@ async function checkNow(showProgress = true) {
 		if (count === -3) {
 			applyState("disconnected", 0, prefs);
 		} else if (count === -2) {
+			cachedToken = null;
+			tokenExpiresAt = 0;
 			applyState("loggedout", 0, prefs);
 		} else if (count === -1) {
 			applyState("unknown", 0, prefs);
