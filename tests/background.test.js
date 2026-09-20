@@ -94,11 +94,15 @@ beforeAll(async () => {
 
   // Mock vk.js before importing background.js
   jest.unstable_mockModule('../js/vk.js', () => ({
-    analyzeHTML: jest.fn(),
-    analyzeMessagesHTML: jest.fn(),
     messagesURL: 'http://mock.test/im',
     siteURL: 'http://mock.test',
-    matchPattern: '*://mock.test/*'
+    matchPattern: '*://mock.test/*',
+    extractAccessToken: jest.fn(),
+    apiRequestURL: jest.fn((method) => `http://mock.test/method/${method}`),
+    diffRequestBody: jest.fn(() => 'mock-diff-body'),
+    itemsRequestBody: jest.fn(() => 'mock-items-body'),
+    parseUnreadCount: jest.fn(),
+    parseConversationItems: jest.fn(() => []),
   }));
 
   vkMock = await import('../js/vk.js');
@@ -244,11 +248,12 @@ describe('background.js', () => {
 
   test('checkNow success sets unread state', async () => {
     chrome.storage.local.get.mockResolvedValue({ preference: { showToolbarNumber: true, enableNotifications: false } });
-    vkMock.analyzeHTML.mockReturnValue(5); // 5 unread messages
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+    vkMock.parseUnreadCount.mockReturnValue(5); // 5 unread messages
 
     global.fetch.mockResolvedValue({
       json: jest.fn().mockResolvedValue({}),
-      text: jest.fn().mockResolvedValue("mock html")
+      text: jest.fn().mockResolvedValue("{}")
     });
 
     if (onMessageListener) {
@@ -261,13 +266,12 @@ describe('background.js', () => {
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "5" });
   });
 
-  test('checkNow disconnected state', async () => {
+  test('checkNow disconnected state (blank page response)', async () => {
     chrome.storage.local.get.mockResolvedValue({ preference: {} });
-    vkMock.analyzeHTML.mockReturnValue(-3); // disconnected
 
     global.fetch.mockResolvedValue({
       json: jest.fn().mockResolvedValue({}),
-      text: jest.fn().mockResolvedValue("mock html")
+      text: jest.fn().mockResolvedValue("")
     });
 
     if (onMessageListener) {
@@ -277,6 +281,42 @@ describe('background.js', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
+  });
+
+  test('checkNow logged-out state (page loads but has no access token)', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: {} });
+    vkMock.extractAccessToken.mockReturnValue(null);
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue("<html>login page</html>")
+    });
+
+    if (onMessageListener) {
+      onMessageListener({ type: "checkNow" }, {}, jest.fn());
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
+  });
+
+  test('checkNow unknown state when the VK API returns an error', async () => {
+    chrome.storage.local.get.mockResolvedValue({ preference: {} });
+    vkMock.extractAccessToken.mockReturnValue('FAKE_TOKEN');
+
+    global.fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue('{"error":{"error_code":10,"error_msg":"Internal error"}}')
+    });
+
+    if (onMessageListener) {
+      onMessageListener({ type: "checkNow" }, {}, jest.fn());
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "?" });
   });
 
   test('open creates new tab', async () => {

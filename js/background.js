@@ -1,7 +1,11 @@
 //================================================================
 // VK Message Checker - Manifest V3 service worker
 //================================================================
-import { analyzeHTML, analyzeMessagesHTML, messagesURL, siteURL, matchPattern } from "./vk.js";
+import {
+	messagesURL, matchPattern,
+	extractAccessToken, apiRequestURL, diffRequestBody, itemsRequestBody,
+	parseUnreadCount, parseConversationItems,
+} from "./vk.js";
 import { getPreference } from "./preferences.js";
 
 const ALARM_NAME = "checkMessages";
@@ -296,24 +300,52 @@ export function isQuietHours(prefs, now = new Date()) {
 	return start < end ? (nowMin >= start && nowMin < end) : (nowMin >= start || nowMin < end);
 }
 
-// Fetch the messages page and parse the unread count.
-// NOTE: analyzeHTML is currently a stub (see js/vk.js) - this always
-// resolves to -1 ("unknown") until real vk.ru markup has been captured.
-async function fetchResolvedMessages(prefs) {
-	const text = await fetchText("GET", messagesURL, null);
-	const count = analyzeHTML(text, prefs);
-	return { html: text, count };
+// GET vk.ru/im and pull out the access_token it embeds for its own API
+// calls. `empty` distinguishes a blank response (disconnected) from a real
+// page with no token in it (not logged in); throws (like any other fetch)
+// if the request itself fails.
+async function fetchAccessToken() {
+	const html = await fetchText("GET", messagesURL, null);
+	if (!html) { return { token: null, empty: true }; }
+	return { token: extractAccessToken(html), empty: false };
 }
 
-async function fetchUnreadCount(prefs, returnMessages = false) {
-	const resolved = await fetchResolvedMessages(prefs);
-	if (returnMessages) { return analyzeMessagesHTML(resolved.html); }
-	return resolved.count;
+// -3 disconnected, -2 logged out, -1 unknown response, 0+ unread count.
+async function fetchUnreadCount(prefs) {
+	const { token, empty } = await fetchAccessToken();
+	if (empty) { return -3; }
+	if (!token) { return -2; }
+
+	const body = diffRequestBody(token);
+	const responseText = await fetchText("POST", apiRequestURL("messages.getDiff"), body);
+	let json;
+	try {
+		json = JSON.parse(responseText);
+	} catch {
+		return -1;
+	}
+	if (json.error) {
+		return json.error.error_code === 5 ? -2 : -1; // 5 = VK's "authorization failed"
+	}
+	return parseUnreadCount(json);
 }
 
-// Fetch messages for the popup
+// Fetch conversation previews for the popup.
 async function getMessages(prefs) {
-	const messages = await fetchUnreadCount(prefs, true);
+	const { token } = await fetchAccessToken();
+	if (!token) { return []; }
+
+	const body = itemsRequestBody(token);
+	const responseText = await fetchText("POST", apiRequestURL("messages.getItems"), body);
+	let json;
+	try {
+		json = JSON.parse(responseText);
+	} catch {
+		return [];
+	}
+	if (json.error) { return []; }
+
+	const messages = parseConversationItems(json);
 	return prefs.showOnlyUnreadInPopup ? messages.filter(m => m.isUnread) : messages;
 }
 

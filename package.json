@@ -1,6 +1,6 @@
 {
   "name": "vk-message-checker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Расширение для Chrome (Manifest V3), которое показывает счётчик непрочитанных сообщений VK на иконке панели инструментов и позволяет быстро открыть VK.",
   "main": "index.js",
   "scripts": {

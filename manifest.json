@@ -24,5 +24,5 @@
    "options_page": "html/options.html",
    "permissions": [ "tabs", "storage", "alarms", "notifications", "offscreen" ],
    "host_permissions": [ "*://*.vk.ru/*", "*://*.vk.com/*" ],
-   "version": "0.1.0"
+   "version": "0.2.0"
 }
