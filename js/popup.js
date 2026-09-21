@@ -48,19 +48,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 	await I18N.ready;
 	const close = () => window.close();
 
-	document.getElementById("open").addEventListener("click", () => {
+	function makeClickable(el, handler) {
+		el.addEventListener("click", handler);
+		el.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				handler(e);
+			}
+		});
+	}
+
+	makeClickable(document.getElementById("open"), () => {
 		chrome.runtime.sendMessage({ type: "open" });
 		close();
 	});
-	document.getElementById("openTitle").addEventListener("click", () => {
+	makeClickable(document.getElementById("openTitle"), () => {
 		chrome.runtime.sendMessage({ type: "open" });
 		close();
 	});
-	document.getElementById("checkNow").addEventListener("click", () => {
+	makeClickable(document.getElementById("checkNow"), () => {
 		chrome.runtime.sendMessage({ type: "checkNow" });
 		close();
 	});
-	document.getElementById("options").addEventListener("click", () => {
+	makeClickable(document.getElementById("options"), () => {
 		chrome.runtime.openOptionsPage();
 		close();
 	});
@@ -120,7 +130,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			header.appendChild(texts);
 			item.appendChild(header);
 
-			item.addEventListener("click", () => {
+			item.tabIndex = 0;
+			item.setAttribute("role", "button");
+			makeClickable(item, () => {
 				chrome.runtime.sendMessage({ type: "open", url: msg.href });
 				close();
 			});
