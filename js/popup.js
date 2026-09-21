@@ -91,6 +91,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return;
 		}
 
+		// Performance optimization: use a DocumentFragment to batch DOM insertions
+		// and avoid multiple layout recalculations (reflows) in the loop.
+		const fragment = document.createDocumentFragment();
+
 		messages.forEach(msg => {
 			const item = document.createElement("div");
 			item.className = "msg-item" + (msg.isUnread ? " unread" : "");
@@ -125,8 +129,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 				close();
 			});
 
-			list.appendChild(item);
+			fragment.appendChild(item);
 		});
+
+		list.appendChild(fragment);
 	});
 });
 
