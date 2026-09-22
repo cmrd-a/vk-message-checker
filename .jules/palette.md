@@ -1,0 +1,3 @@
+## 2024-05-27 - Keyboard Navigation Focus Indicators
+**Learning:** The popup component lacked `focus-visible` styles for elements made interactive via JS, making it impossible for keyboard users to track their focus state inside the messages list and action buttons.
+**Action:** Always ensure that any element acting as a button (using `role="button"` and `tabindex="0"`) receives proper visual focus styling (like `outline: 2px solid var(--accent);`) on `:focus-visible`. Add `tabindex="0"` to allow keyboard users to focus those items, and add `role="button"` to ensure screen readers identify them correctly. Attach `keydown` listeners to act upon the `Enter` and `Space` key actions to simulate a button click.
