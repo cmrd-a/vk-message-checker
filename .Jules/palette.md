@@ -1,0 +1,3 @@
+## 2023-10-27 - [Enhance Keyboard Accessibility and Focus States in Popup]
+**Learning:** In a Chrome Extension popup context, implementing fully accessible interactive elements requires explicit role mapping and keyboard bindings (Space/Enter). The `i18n` logic must be expanded dynamically to apply translations to A11y properties such as `aria-label`.
+**Action:** When creating new custom UI components or refactoring faux buttons (e.g., `div` elements intended as buttons), ensure `tabindex="0"`, `role="button"`, `:focus-visible` styling, and appropriate localized `aria-label` tags are strictly integrated.
