@@ -54,6 +54,10 @@ body {
 	background: var(--border);
 }
 
+.menu-item:focus-visible {
+	outline: 2px solid var(--accent);
+}
+
 .menu-item svg {
 	flex: none;
 	width: 15px;
@@ -88,6 +92,13 @@ body {
 	font-weight: 600;
 	font-size: 14px;
 	cursor: pointer;
+	border-radius: 4px;
+	padding: 4px;
+	margin: -4px;
+}
+
+.header-title:focus-visible {
+	outline: 2px solid var(--accent);
 }
 
 .header-count {
@@ -127,6 +138,10 @@ body {
 	color: var(--text);
 }
 
+.icon-btn:focus-visible {
+	outline: 2px solid var(--accent);
+}
+
 .icon-btn svg {
 	width: 16px;
 	height: 16px;
@@ -159,6 +174,10 @@ body {
 
 .msg-item:hover {
 	background: var(--hover);
+}
+
+.msg-item:focus-visible {
+	outline: 2px solid var(--accent);
 }
 
 .msg-item.unread .msg-sender {

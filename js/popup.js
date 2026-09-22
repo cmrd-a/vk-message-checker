@@ -48,22 +48,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 	await I18N.ready;
 	const close = () => window.close();
 
-	document.getElementById("open").addEventListener("click", () => {
-		chrome.runtime.sendMessage({ type: "open" });
-		close();
-	});
-	document.getElementById("openTitle").addEventListener("click", () => {
-		chrome.runtime.sendMessage({ type: "open" });
-		close();
-	});
-	document.getElementById("checkNow").addEventListener("click", () => {
-		chrome.runtime.sendMessage({ type: "checkNow" });
-		close();
-	});
-	document.getElementById("options").addEventListener("click", () => {
-		chrome.runtime.openOptionsPage();
-		close();
-	});
+	const bindAction = (id, action) => {
+		const el = document.getElementById(id);
+		if (!el) return;
+		const handler = (e) => {
+			if (e.type === "click" || (e.type === "keydown" && (e.key === "Enter" || e.key === " "))) {
+				e.preventDefault();
+				action();
+			}
+		};
+		el.addEventListener("click", handler);
+		el.addEventListener("keydown", handler);
+	};
+
+	bindAction("open", () => { chrome.runtime.sendMessage({ type: "open" }); close(); });
+	bindAction("openTitle", () => { chrome.runtime.sendMessage({ type: "open" }); close(); });
+	bindAction("checkNow", () => { chrome.runtime.sendMessage({ type: "checkNow" }); close(); });
+	bindAction("options", () => { chrome.runtime.openOptionsPage(); close(); });
+
 
 	// Fetch and display messages
 	chrome.runtime.sendMessage({ type: "getMessages" }, (response) => {
@@ -124,10 +126,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 			header.appendChild(texts);
 			item.appendChild(header);
 
-			item.addEventListener("click", () => {
-				chrome.runtime.sendMessage({ type: "open", url: msg.href });
-				close();
-			});
+			item.tabIndex = 0;
+			item.setAttribute("role", "button");
+			const openMsg = (e) => {
+				if (e.type === "click" || (e.type === "keydown" && (e.key === "Enter" || e.key === " "))) {
+					e.preventDefault();
+					chrome.runtime.sendMessage({ type: "open", url: msg.href });
+					close();
+				}
+			};
+			item.addEventListener("click", openMsg);
+			item.addEventListener("keydown", openMsg);
 
 			fragment.appendChild(item);
 		});

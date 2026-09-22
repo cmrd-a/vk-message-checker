@@ -69,6 +69,13 @@ class I18N {
 			const message = I18N.getMessage(node.dataset.i18nValue);
 			if (message) { node.value = message; }
 		}
+		for (const node of document.querySelectorAll("[data-i18n-title]")) {
+			const message = I18N.getMessage(node.dataset.i18nTitle);
+			if (message) {
+				node.title = message;
+				node.setAttribute("aria-label", message);
+			}
+		}
 	}
 
 	// Re-read the selected locale and re-render the page (after a language change).

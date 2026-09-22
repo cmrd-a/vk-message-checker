@@ -9,7 +9,7 @@
 	<body>
 		<div class="popup-container">
 			<div class="header">
-				<div class="header-title" id="openTitle">
+				<div class="header-title" id="openTitle" tabindex="0" role="button">
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;margin-right:6px;color:var(--accent)">
 						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
 					</svg>
@@ -17,13 +17,13 @@
 					<span class="header-count" id="headerCount"></span>
 				</div>
 				<div class="header-actions">
-					<div class="icon-btn" id="checkNow" title="Check now">
+					<div class="icon-btn" id="checkNow" tabindex="0" role="button" data-i18n-title="checkNow">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<path d="M21 12a9 9 0 1 1-2.64-6.36" />
 							<path d="M21 4v5h-5" />
 						</svg>
 					</div>
-					<div class="icon-btn" id="options" title="Options">
+					<div class="icon-btn" id="options" tabindex="0" role="button" data-i18n-title="optionsTitle">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<circle cx="12" cy="12" r="3" />
 							<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -36,7 +36,7 @@
 			</div>
 			<div class="footer">
 				<div class="footer-meta" id="lastChecked"></div>
-				<div class="menu-item primary" id="open">
+				<div class="menu-item primary" id="open" tabindex="0" role="button">
 					<span data-i18n="openApp">Open VK</span>
 				</div>
 			</div>
