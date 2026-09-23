@@ -16,8 +16,8 @@
 
 			<main>
 				<section class="card">
-					<h2 data-i18n="langLegend">Language</h2>
-					<select id="lang" class="select">
+					<h2 id="langTitle" data-i18n="langLegend">Language</h2>
+					<select id="lang" class="select" aria-labelledby="langTitle">
 						<option value="auto" data-i18n="langAuto">Automatic (browser)</option>
 						<option value="en">English</option>
 						<option value="ru">Русский</option>
@@ -63,11 +63,11 @@
 				</section>
 
 				<section class="card">
-					<h2 data-i18n="autoCheckLegend">Auto-check</h2>
+					<h2 id="autoCheckTitle" data-i18n="autoCheckLegend">Auto-check</h2>
 					<div class="range-row">
-						<span class="range-edge" data-i18n="often">Often</span>
-						<input id="autoCheckRange" type="range" min="1" max="181" step="1" />
-						<span class="range-edge" data-i18n="never">Never</span>
+						<span class="range-edge" aria-hidden="true" data-i18n="often">Often</span>
+						<input id="autoCheckRange" type="range" min="1" max="181" step="1" aria-labelledby="autoCheckTitle" />
+						<span class="range-edge" aria-hidden="true" data-i18n="never">Never</span>
 					</div>
 					<div id="autoCheckText" class="hint hint-strong"></div>
 					<p class="hint" data-i18n="autoCheckWarning">Warning: checking more often than every 3 minutes may overload VK.</p>
