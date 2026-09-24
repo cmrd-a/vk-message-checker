@@ -16,8 +16,8 @@
 
 			<main>
 				<section class="card">
-					<h2 data-i18n="langLegend">Language</h2>
-					<select id="lang" class="select">
+					<h2 id="langHeading" data-i18n="langLegend">Language</h2>
+					<select id="lang" class="select" aria-labelledby="langHeading">
 						<option value="auto" data-i18n="langAuto">Automatic (browser)</option>
 						<option value="en">English</option>
 						<option value="ru">Русский</option>
@@ -56,18 +56,18 @@
 						<span data-i18n="quietHoursEnabledOpt">Quiet hours (no sound or notification)</span>
 					</label>
 					<div class="range-row" id="quietHoursRow">
-						<input type="time" id="quietHoursStart" class="time-input" />
-						<span class="range-edge" data-i18n="quietHoursTo">to</span>
-						<input type="time" id="quietHoursEnd" class="time-input" />
+						<input type="time" id="quietHoursStart" class="time-input" aria-label="Quiet hours start" />
+						<span class="range-edge" aria-hidden="true" data-i18n="quietHoursTo">to</span>
+						<input type="time" id="quietHoursEnd" class="time-input" aria-label="Quiet hours end" />
 					</div>
 				</section>
 
 				<section class="card">
-					<h2 data-i18n="autoCheckLegend">Auto-check</h2>
+					<h2 id="autoCheckHeading" data-i18n="autoCheckLegend">Auto-check</h2>
 					<div class="range-row">
-						<span class="range-edge" data-i18n="often">Often</span>
-						<input id="autoCheckRange" type="range" min="1" max="181" step="1" />
-						<span class="range-edge" data-i18n="never">Never</span>
+						<span class="range-edge" aria-hidden="true" data-i18n="often">Often</span>
+						<input id="autoCheckRange" type="range" min="1" max="181" step="1" aria-labelledby="autoCheckHeading" />
+						<span class="range-edge" aria-hidden="true" data-i18n="never">Never</span>
 					</div>
 					<div id="autoCheckText" class="hint hint-strong"></div>
 					<p class="hint" data-i18n="autoCheckWarning">Warning: checking more often than every 3 minutes may overload VK.</p>

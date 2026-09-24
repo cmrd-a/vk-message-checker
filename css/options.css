@@ -31,6 +31,11 @@
 	box-sizing: border-box;
 }
 
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
 body {
 	margin: 0;
 	background: var(--bg);
@@ -108,7 +113,6 @@ body {
 }
 
 .select:focus {
-	outline: none;
 	border-color: var(--accent);
 }
 
@@ -133,7 +137,6 @@ body {
 }
 
 .time-input:focus {
-	outline: none;
 	border-color: var(--accent);
 }
 
