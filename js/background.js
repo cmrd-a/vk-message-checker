@@ -426,8 +426,11 @@ async function notifyNewMessages(token, count, prefs) {
 	if (newItems.length === 0) {
 		createNotification(t("appName") || "VK Messages", t("statusUnread", [String(count)]), null, prefs, useSystemSound);
 	} else {
-		for (const item of newItems) {
-			const iconUrl = await fetchAvatarDataURL(item.avatarUrl);
+		// Performance optimization: fetch all avatar data URLs concurrently instead of sequentially
+		const iconUrls = await Promise.all(newItems.map(item => fetchAvatarDataURL(item.avatarUrl)));
+		for (let i = 0; i < newItems.length; i++) {
+			const item = newItems[i];
+			const iconUrl = iconUrls[i];
 			createNotification(item.sender || t("appName") || "VK Messages", item.subject || t("statusUnread", [String(count)]), iconUrl, prefs, useSystemSound);
 		}
 	}
