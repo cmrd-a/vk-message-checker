@@ -1,0 +1,3 @@
+## 2024-05-14 - Settings Page Accessibility Defaults
+**Learning:** Chrome extension options pages often rely on standard HTML inputs that look clean visually but have their default focus outlines removed via `outline: none` for aesthetics, severely impacting keyboard navigation. Additionally, layout structures often group an `<input>` under a generic `<h2>` without an explicit `<label>`, making the control contextless for screen readers.
+**Action:** Always check for `:focus-visible` styling when reviewing settings forms, and ensure inputs not wrapped in or associated with a `<label>` receive `aria-label` or `aria-labelledby` linking them to their context.
