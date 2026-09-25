@@ -18,6 +18,7 @@ function hashCode(str) {
 function buildAvatar(name, avatarUrl) {
 	const avatar = document.createElement("div");
 	avatar.className = "msg-avatar";
+	avatar.setAttribute("aria-hidden", "true");
 	avatar.style.background = AVATAR_COLORS[hashCode(name || "?") % AVATAR_COLORS.length];
 	avatar.textContent = (name || "?").trim().charAt(0).toUpperCase() || "?";
 
