@@ -26,7 +26,9 @@ function updateAutoCheckText() {
 	} else {
 		text = `${value} ${msg("minutesShort")}`;
 	}
-	$("autoCheckText").textContent = msg("checkEvery", [text]);
+	const fullText = msg("checkEvery", [text]);
+	$("autoCheckText").textContent = fullText;
+	$("autoCheckRange").setAttribute("aria-valuetext", fullText);
 }
 
 // Convert a stored interval (minutes, or "never") to a slider position.
