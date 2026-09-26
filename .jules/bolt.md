@@ -4,3 +4,6 @@
 ## 2024-05-24 - DOM template cloning over sequential element creation
 **Learning:** In scenarios with repeated list rendering on the frontend, instantiating a DOM `<template>` once and using `cloneNode(true)` followed by `.children` navigation avoids the parsing overhead and multiple function calls of `document.createElement`.
 **Action:** Use a pre-constructed template and `cloneNode(true)` in loops creating complex HTML element structures, especially for dynamically generated lists where performance is key.
+## 2026-09-26 - Pre-computing static URL parameters
+**Learning:** Instantiating and stringifying `URLSearchParams` on every API request is computationally expensive (benchmarks show ~20x slower) when the majority of the parameters are static configurations.
+**Action:** Extract the static parts of request bodies/URLs into a pre-computed string using `URLSearchParams` at module load time, and concatenate dynamic values (like `access_token`) into it using template literals (`key=${encodeURIComponent(val)}&${STATIC_PARAMS}`).

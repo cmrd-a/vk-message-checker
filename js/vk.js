@@ -36,22 +36,24 @@ export function apiRequestURL(method) {
 	return `${API_BASE}/${method}?v=${API_VERSION}&client_id=${CLIENT_ID}`;
 }
 
+// Pre-compute static parameters to avoid repeated URLSearchParams instantiation overhead
+const DIFF_STATIC_PARAMS = new URLSearchParams({
+	v: API_VERSION,
+	app_id: CLIENT_ID,
+	lp_version: "0",
+	conversations_limit: "0",
+	extended_filters: "counters",
+	group_id: "0",
+	counter_filters: "all",
+	supported_types: "channels,business,personal,unread,managed_groups,threads",
+}).toString();
+
 // Body for messages.getDiff, trimmed to just what unread counters need.
 // lp_version=0 asks for a full current snapshot (the captured request used
 // a nonzero version to continue an existing long-poll session, which we
 // don't have) rather than an incremental diff.
 export function diffRequestBody(accessToken) {
-	return new URLSearchParams({
-		access_token: accessToken,
-		v: API_VERSION,
-		app_id: CLIENT_ID,
-		lp_version: "0",
-		conversations_limit: "0",
-		extended_filters: "counters",
-		group_id: "0",
-		counter_filters: "all",
-		supported_types: "channels,business,personal,unread,managed_groups,threads",
-	}).toString();
+	return `access_token=${encodeURIComponent(accessToken)}&${DIFF_STATIC_PARAMS}`;
 }
 
 // Parse messages.getDiff's response for the total unread-message count.
@@ -79,22 +81,24 @@ export function parseUnreadCount(diffResponseJson) {
 // without another live capture, so both are kept faithful to the original).
 const ITEMS_FIELDS = "id,first_name,first_name_gen,first_name_acc,first_name_ins,first_name_dat,last_name,last_name_gen,last_name_acc,last_name_ins,sex,has_photo,photo_id,photo_50,photo_100,photo_200,contact_name,occupation,bdate,city,screen_name,online_info,verified,blacklisted,blacklisted_by_me,language,can_call,can_write_private_message,can_send_friend_request,can_invite_to_chats,friend_status,followers_count,profile_type,contacts,employee_mark,employee_working_state,is_service_account,image_status,photo_base,educational_profile,edu_roles,is_followers_mode_on,name,type,members_count,member_status,is_closed,can_message,deactivated,activity,ban_info,is_messages_blocked,can_send_notify,can_post_donut,site,reposts_disabled,description,action_button,menu,role,unread_count,wall,can_manage,disallow_manage_reason,age_limits,warning_notification";
 
+// Pre-compute static parameters to avoid repeated URLSearchParams instantiation overhead
+const ITEMS_STATIC_PARAMS = new URLSearchParams({
+	v: API_VERSION,
+	app_id: CLIENT_ID,
+	filter: "all",
+	start_from: "conversations_0,channels_0_0",
+	extended: "1",
+	target_count: "40",
+	group_id: "0",
+	fields: ITEMS_FIELDS,
+}).toString();
+
 // Body for messages.getItems (conversation previews for the popup list).
 // start_from is the "give me the first page" cursor the captured request
 // used - it's not just an optional continuation token, omitting it was
 // most likely why the popup list came back empty.
 export function itemsRequestBody(accessToken) {
-	return new URLSearchParams({
-		access_token: accessToken,
-		v: API_VERSION,
-		app_id: CLIENT_ID,
-		filter: "all",
-		start_from: "conversations_0,channels_0_0",
-		extended: "1",
-		target_count: "40",
-		group_id: "0",
-		fields: ITEMS_FIELDS,
-	}).toString();
+	return `access_token=${encodeURIComponent(accessToken)}&${ITEMS_STATIC_PARAMS}`;
 }
 
 // A conversation is unread if it's flagged as such, or its last message
