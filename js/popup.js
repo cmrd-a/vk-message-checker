@@ -105,37 +105,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 		// and avoid multiple layout recalculations (reflows) in the loop.
 		const fragment = document.createDocumentFragment();
 
+		// Performance optimization: parse DOM template once instead of multiple createElement calls
+		const itemTemplate = document.createElement("template");
+		itemTemplate.innerHTML = `
+			<div class="msg-item" role="button" tabindex="0">
+				<div class="msg-header">
+					<div class="msg-texts">
+						<div class="msg-sender"></div>
+						<div class="msg-subject"></div>
+						<div class="msg-snippet"></div>
+					</div>
+				</div>
+			</div>
+		`;
+
 		messages.forEach(msg => {
-			const item = document.createElement("div");
-			item.className = "msg-item" + (msg.isUnread ? " unread" : "");
+			const item = itemTemplate.content.cloneNode(true).firstElementChild;
+			if (msg.isUnread) { item.classList.add("unread"); }
 
-			const header = document.createElement("div");
-			header.className = "msg-header";
-			header.appendChild(buildAvatar(msg.sender, msg.avatarUrl));
+			const header = item.firstElementChild;
+			const texts = header.firstElementChild;
+			const sender = texts.children[0];
+			const subject = texts.children[1];
+			const snippet = texts.children[2];
 
-			const texts = document.createElement("div");
-			texts.className = "msg-texts";
+			header.insertBefore(buildAvatar(msg.sender, msg.avatarUrl), texts);
 
-			const sender = document.createElement("div");
-			sender.className = "msg-sender";
 			sender.textContent = msg.sender || "";
-			texts.appendChild(sender);
-
-			const subject = document.createElement("div");
-			subject.className = "msg-subject";
 			subject.textContent = msg.subject || "";
-			texts.appendChild(subject);
-
-			const snippet = document.createElement("div");
-			snippet.className = "msg-snippet";
 			snippet.textContent = msg.snippet || "";
-			texts.appendChild(snippet);
 
-			header.appendChild(texts);
-			item.appendChild(header);
-
-			item.tabIndex = 0;
-			item.setAttribute("role", "button");
 			makeClickable(item, () => {
 				chrome.runtime.sendMessage({ type: "open", url: msg.href });
 				close();
