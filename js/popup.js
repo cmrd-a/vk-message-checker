@@ -136,6 +136,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 			subject.textContent = msg.subject || "";
 			snippet.textContent = msg.snippet || "";
 
+			const fullText = `${msg.sender || ""}. ${msg.subject || ""}. ${msg.snippet || ""}`;
+			item.setAttribute("aria-label", fullText);
+			item.setAttribute("title", fullText);
+
 			makeClickable(item, () => {
 				chrome.runtime.sendMessage({ type: "open", url: msg.href });
 				close();
