@@ -1,3 +1,6 @@
 ## 2024-05-14 - Settings Page Accessibility Defaults
 **Learning:** Chrome extension options pages often rely on standard HTML inputs that look clean visually but have their default focus outlines removed via `outline: none` for aesthetics, severely impacting keyboard navigation. Additionally, layout structures often group an `<input>` under a generic `<h2>` without an explicit `<label>`, making the control contextless for screen readers.
 **Action:** Always check for `:focus-visible` styling when reviewing settings forms, and ensure inputs not wrapped in or associated with a `<label>` receive `aria-label` or `aria-labelledby` linking them to their context.
+## 2026-09-25 - Accessible Status Updates & Screen Reader Clarity
+**Learning:** Temporary status updates (like a "Saved" message) require ARIA live regions to be announced by screen readers, otherwise the user interaction provides no auditory feedback. Additionally, purely decorative UI elements, like an initial acting as a placeholder avatar next to a user's name, will create redundant, confusing screen reader output if not hidden with `aria-hidden="true"`.
+**Action:** Always add `role="status"` and `aria-live="polite"` (or `aria-live="assertive"` if critical) to dynamic status messages. Always add `aria-hidden="true"` to decorative elements that duplicate information already present in the DOM.
