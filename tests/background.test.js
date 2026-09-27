@@ -231,6 +231,24 @@ describe('isQuietHours', () => {
 });
 
 describe('background.js', () => {
+  beforeAll(() => {
+    if (typeof global.FileReader === 'undefined') {
+      class MockFileReader {
+        constructor() {
+          this.onloadend = null;
+          this.onerror = null;
+          this.result = null;
+        }
+        readAsDataURL(blob) {
+          setTimeout(() => {
+            this.result = 'data:image/jpeg;base64,AQID';
+            if (this.onloadend) this.onloadend();
+          }, 0);
+        }
+      }
+      global.FileReader = MockFileReader;
+    }
+  });
   test('setup mock env', () => {
     expect(chrome.action.setTitle).toBeDefined();
   });
@@ -363,6 +381,7 @@ describe('background.js', () => {
     const avatarResponse = {
       ok: true,
       headers: { get: () => 'image/jpeg' },
+      blob: jest.fn().mockResolvedValue(new Blob([new Uint8Array([1, 2, 3]).buffer], { type: 'image/jpeg' })),
       arrayBuffer: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
     };
     global.fetch.mockImplementation((url) => Promise.resolve(

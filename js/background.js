@@ -380,16 +380,13 @@ async function fetchAvatarDataURL(url) {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
-		const contentType = response.headers.get("content-type") || "image/jpeg";
-		const bytes = new Uint8Array(await response.arrayBuffer());
-		let binary = "";
-		// Performance optimization: converting byte array to string in chunks
-		// instead of character-by-character to avoid O(N^2) string concatenation overhead.
-		const CHUNK_SIZE = 8192;
-		for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-			binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK_SIZE));
-		}
-		return `data:${contentType};base64,${btoa(binary)}`;
+		const blob = await response.blob();
+		return await new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onloadend = () => resolve(reader.result);
+			reader.onerror = reject;
+			reader.readAsDataURL(blob);
+		});
 	} catch {
 		return null;
 	}
