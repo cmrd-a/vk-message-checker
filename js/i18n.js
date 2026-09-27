@@ -50,18 +50,10 @@ class I18N {
 		}
 		let text = entry.message;
 		if (entry.placeholders) {
-			// Optimization: to avoid finding keys on every match, we can find it once per match.
-			// The original implementation would replace with empty string if content is missing,
-			// or do nothing if the placeholder name doesn't match at all.
-			text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
-				const lowerName = name.toLowerCase();
-				for (const key in entry.placeholders) {
-					if (key.toLowerCase() === lowerName) {
-						return entry.placeholders[key].content ?? "";
-					}
-				}
-				return match; // Not a valid placeholder, keep as is
-			});
+			for (const [name, def] of Object.entries(entry.placeholders)) {
+				const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				text = text.replace(new RegExp(`\\$${escapedName}\\$`, "gi"), () => def.content ?? "");
+			}
 		}
 		const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
 		text = text.replace(/\$(\d+)/g, (_, n) => args[Number(n) - 1] ?? "");
