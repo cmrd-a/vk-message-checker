@@ -67,9 +67,15 @@ function t(key, subs) {
 	}
 	let text = entry.message;
 	if (entry.placeholders) {
-		for (const [name, def] of Object.entries(entry.placeholders)) {
-			text = text.replace(new RegExp(`\\$${name}\\$`, "gi"), def.content ?? "");
-		}
+		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
+			const lowerName = name.toLowerCase();
+			for (const key in entry.placeholders) {
+				if (key.toLowerCase() === lowerName) {
+					return entry.placeholders[key].content ?? "";
+				}
+			}
+			return match;
+		});
 	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
 	text = text.replace(/\$(\d+)/g, (_, n) => args[Number(n) - 1] ?? "");
