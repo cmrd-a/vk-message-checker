@@ -7,7 +7,7 @@ const AVATAR_COLORS = ["#0077ff", "#ec3a2f", "#2fbf71", "#b23fec", "#d98c00", "#
 const LAST_CHECKED_REFRESH_MS = 30000;
 
 // Small deterministic hash so the same sender always gets the same color.
-function hashCode(str) {
+export function hashCode(str) {
 	let h = 0;
 	for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
 	return Math.abs(h);
@@ -35,7 +35,7 @@ function buildAvatar(name, avatarUrl) {
 }
 
 // Render a relative "checked Xm ago" style label.
-function formatAgo(timestamp) {
+export function formatAgo(timestamp) {
 	if (!timestamp) { return ""; }
 	const diffSec = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
 	if (diffSec < 45) { return I18N.getMessage("justNow") || "just now"; }
