@@ -5,8 +5,8 @@
 
 import { getPreference } from "./preferences.js";
 
-const MAX_AUTO_CHECK_RANGE = 181;
-const NEVER_INTERVAL = 0x7fffffff;
+export const MAX_AUTO_CHECK_RANGE = 181;
+export const NEVER_INTERVAL = 0x7fffffff;
 
 const $ = (id) => document.getElementById(id);
 
@@ -32,13 +32,13 @@ function updateAutoCheckText() {
 }
 
 // Convert a stored interval (minutes, or "never") to a slider position.
-function intervalToSlider(interval) {
+export function intervalToSlider(interval) {
 	if (interval === NEVER_INTERVAL) { return MAX_AUTO_CHECK_RANGE; }
 	return Math.min(180, Math.max(1, interval));
 }
 
 // Convert a slider position back to a stored interval value.
-function sliderToInterval(slider) {
+export function sliderToInterval(slider) {
 	return slider === MAX_AUTO_CHECK_RANGE ? NEVER_INTERVAL : slider;
 }
 
