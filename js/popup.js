@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		setInterval(renderLastChecked, LAST_CHECKED_REFRESH_MS);
 
 		const list = document.getElementById("messageList");
-		list.innerHTML = "";
+		list.textContent = "";
 
 		if (!messages || messages.length === 0) {
 			const div = document.createElement("div");
