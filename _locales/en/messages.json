@@ -31,7 +31,9 @@
    "soundBell": { "message": "Bell" },
    "soundNone": { "message": "None" },
    "quietHoursEnabledOpt": { "message": "Quiet hours (no sound or notification)" },
+   "quietHoursStartLabel": { "message": "Quiet hours start" },
    "quietHoursTo": { "message": "to" },
+   "quietHoursEndLabel": { "message": "Quiet hours end" },
 
    "autoCheckLegend": { "message": "Auto-check" },
    "often": { "message": "Often" },

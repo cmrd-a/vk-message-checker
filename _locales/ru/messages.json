@@ -31,7 +31,9 @@
    "soundBell": { "message": "Колокольчик" },
    "soundNone": { "message": "Без звука" },
    "quietHoursEnabledOpt": { "message": "Тихие часы (без звука и уведомлений)" },
+   "quietHoursStartLabel": { "message": "Начало тихих часов" },
    "quietHoursTo": { "message": "до" },
+   "quietHoursEndLabel": { "message": "Конец тихих часов" },
 
    "autoCheckLegend": { "message": "Автопроверка" },
    "often": { "message": "Часто" },

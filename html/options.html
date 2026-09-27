@@ -15,7 +15,7 @@
 			</header>
 
 			<main>
-				<section class="card">
+				<section class="card" aria-labelledby="langHeading">
 					<h2 id="langHeading" data-i18n="langLegend">Language</h2>
 					<select id="lang" class="select" aria-labelledby="langHeading">
 						<option value="auto" data-i18n="langAuto">Automatic (browser)</option>
@@ -24,16 +24,16 @@
 					</select>
 				</section>
 
-				<section class="card">
-					<h2 data-i18n="checkingLegend">Message Checking</h2>
+				<section class="card" aria-labelledby="checkingHeading">
+					<h2 id="checkingHeading" data-i18n="checkingLegend">Message Checking</h2>
 					<label class="field">
 						<input type="checkbox" id="showOnlyUnreadInPopup" />
 						<span data-i18n="showOnlyUnreadInPopupOpt">Show only unread messages in the popup list</span>
 					</label>
 				</section>
 
-				<section class="card">
-					<h2 data-i18n="notificationsLegend">Notifications</h2>
+				<section class="card" aria-labelledby="notificationsHeading">
+					<h2 id="notificationsHeading" data-i18n="notificationsLegend">Notifications</h2>
 					<label class="field">
 						<input type="checkbox" id="enableNotifications" />
 						<span data-i18n="enableNotifications">Show desktop notification for new messages</span>
@@ -56,13 +56,13 @@
 						<span data-i18n="quietHoursEnabledOpt">Quiet hours (no sound or notification)</span>
 					</label>
 					<div class="range-row" id="quietHoursRow">
-						<input type="time" id="quietHoursStart" class="time-input" aria-label="Quiet hours start" />
+						<input type="time" id="quietHoursStart" class="time-input" data-i18n-title="quietHoursStartLabel" />
 						<span class="range-edge" aria-hidden="true" data-i18n="quietHoursTo">to</span>
-						<input type="time" id="quietHoursEnd" class="time-input" aria-label="Quiet hours end" />
+						<input type="time" id="quietHoursEnd" class="time-input" data-i18n-title="quietHoursEndLabel" />
 					</div>
 				</section>
 
-				<section class="card">
+				<section class="card" aria-labelledby="autoCheckHeading">
 					<h2 id="autoCheckHeading" data-i18n="autoCheckLegend">Auto-check</h2>
 					<div class="range-row">
 						<span class="range-edge" aria-hidden="true" data-i18n="often">Often</span>
@@ -73,8 +73,8 @@
 					<p class="hint" data-i18n="autoCheckWarning">Warning: checking more often than every 3 minutes may overload VK.</p>
 				</section>
 
-				<section class="card">
-					<h2 data-i18n="toolbarLegend">Toolbar Icon</h2>
+				<section class="card" aria-labelledby="toolbarHeading">
+					<h2 id="toolbarHeading" data-i18n="toolbarLegend">Toolbar Icon</h2>
 					<label class="field">
 						<input type="checkbox" id="showToolbarNumber" />
 						<span data-i18n="showCounter">Show counter on toolbar button</span>
@@ -89,8 +89,8 @@
 					</label>
 				</section>
 
-				<section class="card">
-					<h2 data-i18n="openingLegend">Opening VK</h2>
+				<section class="card" aria-labelledby="openingHeading">
+					<h2 id="openingHeading" data-i18n="openingLegend">Opening VK</h2>
 					<label class="field">
 						<input type="checkbox" id="resetCounter" />
 						<span data-i18n="resetCounterOpt">Reset counter upon opening VK</span>
@@ -113,8 +113,8 @@
 					</label>
 				</section>
 
-				<section class="card about">
-					<h2 data-i18n="aboutTitle">About</h2>
+				<section class="card about" aria-labelledby="aboutHeading">
+					<h2 id="aboutHeading" data-i18n="aboutTitle">About</h2>
 					<div class="about-row">
 						<img class="about-icon" src="../icons/c48.png" alt="" />
 						<div class="about-meta">
