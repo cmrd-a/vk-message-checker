@@ -53,12 +53,17 @@ class I18N {
 			// Optimization: to avoid finding keys on every match, we can find it once per match.
 			// The original implementation would replace with empty string if content is missing,
 			// or do nothing if the placeholder name doesn't match at all.
+			let lowerPlaceholders;
 			text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
-				const lowerName = name.toLowerCase();
-				for (const key in entry.placeholders) {
-					if (key.toLowerCase() === lowerName) {
-						return entry.placeholders[key].content ?? "";
+				if (!lowerPlaceholders) {
+					lowerPlaceholders = {};
+					for (const key in entry.placeholders) {
+						lowerPlaceholders[key.toLowerCase()] = entry.placeholders[key].content ?? "";
 					}
+				}
+				const lowerName = name.toLowerCase();
+				if (lowerName in lowerPlaceholders) {
+					return lowerPlaceholders[lowerName];
 				}
 				return match; // Not a valid placeholder, keep as is
 			});
