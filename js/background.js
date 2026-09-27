@@ -293,8 +293,8 @@ async function fetchText(method, url, body) {
 
 // Parse a "HH:MM" preference string into minutes since midnight.
 function parseHHMM(value) {
-	const [h, m] = String(value || "0:0").split(":").map(Number);
-	return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+	const [h, m] = String(value || "0:0").split(":");
+	return (Number(h) || 0) * 60 + (Number(m) || 0);
 }
 
 // Whether "now" (local time) falls inside the configured quiet-hours window.
