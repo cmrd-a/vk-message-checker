@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Combine DOM queries
+**Learning:** Combining multiple `querySelectorAll` calls into a single call with a comma-separated selector (e.g., `[data-i18n], [data-i18n-value], [data-i18n-title]`) and iterating over `node.dataset` properties can be significantly faster in a browser environment (like Playwright/Chromium) by reducing DOM traversals and JS-DOM boundary crossings, even if raw JS loops might seem slightly slower in pure microbenchmarks.
+**Action:** Consolidate multiple queries on the same node types/attributes when possible to minimize DOM traversal overhead.

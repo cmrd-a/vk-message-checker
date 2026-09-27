@@ -70,19 +70,22 @@ class I18N {
 
 	// Fill [data-i18n] text and [data-i18n-value] values from the locale.
 	static localizePage() {
-		for (const node of document.querySelectorAll("[data-i18n]")) {
-			const message = I18N.getMessage(node.dataset.i18n);
-			if (message) { node.textContent = message; }
-		}
-		for (const node of document.querySelectorAll("[data-i18n-value]")) {
-			const message = I18N.getMessage(node.dataset.i18nValue);
-			if (message) { node.value = message; }
-		}
-		for (const node of document.querySelectorAll("[data-i18n-title]")) {
-			const message = I18N.getMessage(node.dataset.i18nTitle);
-			if (message) {
-				node.title = message;
-				node.setAttribute("aria-label", message);
+		for (const node of document.querySelectorAll("[data-i18n], [data-i18n-value], [data-i18n-title]")) {
+			const ds = node.dataset;
+			if (ds.i18n !== undefined) {
+				const message = I18N.getMessage(ds.i18n);
+				if (message) { node.textContent = message; }
+			}
+			if (ds.i18nValue !== undefined) {
+				const message = I18N.getMessage(ds.i18nValue);
+				if (message) { node.value = message; }
+			}
+			if (ds.i18nTitle !== undefined) {
+				const message = I18N.getMessage(ds.i18nTitle);
+				if (message) {
+					node.title = message;
+					node.setAttribute("aria-label", message);
+				}
 			}
 		}
 	}
