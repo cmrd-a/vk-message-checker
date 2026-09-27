@@ -8,8 +8,11 @@ const LAST_CHECKED_REFRESH_MS = 30000;
 
 // Small deterministic hash so the same sender always gets the same color.
 function hashCode(str) {
-	let h = 0;
-	for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+	let h = 0x811c9dc5;
+	for (let i = 0; i < str.length; i++) {
+		h ^= str.charCodeAt(i);
+		h = Math.imul(h, 0x01000193);
+	}
 	return Math.abs(h);
 }
 

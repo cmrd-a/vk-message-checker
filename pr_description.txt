@@ -1,0 +1,5 @@
+🎯 **What:** The previous `hashCode` implementation used a simple Java-style string hashing algorithm (`(h * 31 + charCode) | 0`) which has weak dispersion and is generally not recommended for robust hashing. It has been replaced with the FNV-1a (32-bit) hashing algorithm.
+
+⚠️ **Risk:** While not a severe security vulnerability as it only determines a CSS background color for user avatars in the UI, simple linear hashing can result in many collisions and predictable patterns. Replacing it is a good code hygiene measure to ensure better dispersion and avoid weak hashing algorithms in the codebase.
+
+🛡️ **Solution:** Implemented the FNV-1a (32-bit) algorithm using the 32-bit FNV offset basis (`0x811c9dc5`) and FNV prime (`0x01000193`), with `Math.imul()` for correct 32-bit integer multiplication, ensuring better distribution of avatar colors based on the sender's name.
