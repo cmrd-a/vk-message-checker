@@ -67,14 +67,15 @@ function t(key, subs) {
 	}
 	let text = entry.message;
 	if (entry.placeholders) {
+		// Optimization: pre-build a case-insensitive map of placeholders to avoid
+		// O(N) object key iterations per placeholder match inside the replace callback.
+		const lookup = Object.create(null);
+		for (const key in entry.placeholders) {
+			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+		}
 		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 			const lowerName = name.toLowerCase();
-			for (const key in entry.placeholders) {
-				if (key.toLowerCase() === lowerName) {
-					return entry.placeholders[key].content ?? "";
-				}
-			}
-			return match;
+			return lowerName in lookup ? lookup[lowerName] : match;
 		});
 	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
