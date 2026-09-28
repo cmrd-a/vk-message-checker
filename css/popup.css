@@ -145,10 +145,29 @@ body {
 	flex-direction: column;
 }
 
-.loading, .no-messages {
+.loading {
 	padding: 20px;
 	text-align: center;
 	color: var(--muted);
+}
+
+.no-messages {
+	padding: 32px 20px;
+	text-align: center;
+	color: var(--muted);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	height: 100%;
+}
+
+.no-messages svg {
+	width: 48px;
+	height: 48px;
+	opacity: 0.5;
+	stroke-width: 1.5;
 }
 
 .msg-item {

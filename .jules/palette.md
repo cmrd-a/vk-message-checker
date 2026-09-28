@@ -7,3 +7,6 @@
 ## 2024-09-27 - Options Page Landmark Regions and Localized ARIA Labels
 **Learning:** In settings pages, grouping form controls under a generic `<section>` without an explicit link to its header reduces context for screen readers. Using `aria-labelledby` on `<section>` elements pointing to the header `id` creates accessible landmark regions. Additionally, hardcoding English `aria-label`s in HTML breaks accessibility for users of other languages; the extension's custom i18n system (`data-i18n-title`) should be used to provide localized ARIA labels.
 **Action:** Ensure all logically grouped sections in settings forms have `aria-labelledby` linking to their heading. Always use `data-i18n-title` instead of hardcoded `aria-label` attributes for elements requiring screen reader context.
+## 2026-09-28 - [Empty State Visual Polish]
+**Learning:** The existing empty state in the popup menu was just plain text ('No unread messages'), which lacked visual appeal. Adding a simple SVG icon and utilizing flexbox for centering significantly improves the visual polish.
+**Action:** When working on empty states, consider adding a visually pleasing, muted icon (with `aria-hidden='true'`) and ensuring proper spacing/alignment to make the interface look intentional and premium.

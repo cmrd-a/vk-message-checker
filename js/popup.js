@@ -97,7 +97,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (!messages || messages.length === 0) {
 			const div = document.createElement("div");
 			div.className = "no-messages";
-			div.textContent = I18N.getMessage("statusEmpty") || "No unread messages";
+
+			const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			iconSvg.setAttribute("viewBox", "0 0 24 24");
+			iconSvg.setAttribute("fill", "none");
+			iconSvg.setAttribute("stroke", "currentColor");
+			iconSvg.setAttribute("stroke-width", "2");
+			iconSvg.setAttribute("stroke-linecap", "round");
+			iconSvg.setAttribute("stroke-linejoin", "round");
+			iconSvg.setAttribute("aria-hidden", "true");
+
+			const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			path1.setAttribute("d", "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z");
+
+			const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			path2.setAttribute("d", "m9 12 2 2 4-4");
+
+			iconSvg.appendChild(path1);
+			iconSvg.appendChild(path2);
+
+			const textSpan = document.createElement("span");
+			textSpan.textContent = I18N.getMessage("statusEmpty") || "No unread messages";
+
+			div.appendChild(iconSvg);
+			div.appendChild(textSpan);
 			list.appendChild(div);
 			return;
 		}
