@@ -50,15 +50,18 @@ class I18N {
 		}
 		let text = entry.message;
 		if (entry.placeholders) {
-			// Optimization: to avoid finding keys on every match, we can find it once per match.
-			// The original implementation would replace with empty string if content is missing,
-			// or do nothing if the placeholder name doesn't match at all.
+			// Performance optimization: Pre-build case-insensitive lookup dictionary
+			// using Object.create(null) outside of .replace() callbacks or loops
+			// to ensure O(1) lookups instead of O(N*M) operations.
+			const placeholdersMap = Object.create(null);
+			for (const key in entry.placeholders) {
+				placeholdersMap[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+			}
 			text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 				const lowerName = name.toLowerCase();
-				for (const key in entry.placeholders) {
-					if (key.toLowerCase() === lowerName) {
-						return entry.placeholders[key].content ?? "";
-					}
+				if (lowerName in placeholdersMap) {
+					// Use a replacer function to avoid replacement string injection
+					return placeholdersMap[lowerName];
 				}
 				return match; // Not a valid placeholder, keep as is
 			});

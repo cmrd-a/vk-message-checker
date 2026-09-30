@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-10-24 - Pre-building lookup dictionaries for O(1) performance in string replacement loops
+**Learning:** Looping through an object to find a match inside a string replacement callback like `.replace()` leads to O(N*M) operations, where N is the number of items and M is the number of regex matches.
+**Action:** Always pre-build a case-insensitive lookup dictionary using `Object.create(null)` outside of the loop/callback to guarantee O(1) lookups.
