@@ -50,17 +50,19 @@ class I18N {
 		}
 		let text = entry.message;
 		if (entry.placeholders) {
-			// Optimization: to avoid finding keys on every match, we can find it once per match.
-			// The original implementation would replace with empty string if content is missing,
-			// or do nothing if the placeholder name doesn't match at all.
+			// Optimization: pre-build a case-insensitive lookup dictionary outside the
+			// replacer callback, so each match is an O(1) lookup instead of an O(N)
+			// scan of every placeholder key.
+			const lookup = Object.create(null);
+			for (const key in entry.placeholders) {
+				lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+			}
+			// A single compiled regex keeps this to one pass over the string; the
+			// replacer function (rather than a replacement string) also prevents
+			// $-pattern injection from placeholder content.
 			text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 				const lowerName = name.toLowerCase();
-				for (const key in entry.placeholders) {
-					if (key.toLowerCase() === lowerName) {
-						return entry.placeholders[key].content ?? "";
-					}
-				}
-				return match; // Not a valid placeholder, keep as is
+				return lowerName in lookup ? lookup[lowerName] : match;
 			});
 		}
 		const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
@@ -68,21 +70,27 @@ class I18N {
 		return text;
 	}
 
-	// Fill [data-i18n] text and [data-i18n-value] values from the locale.
+	// Fill [data-i18n] text, [data-i18n-value] values and [data-i18n-title]
+	// titles from the locale. One combined query over the whole document avoids
+	// three separate DOM traversals; a node may carry several of the attributes.
 	static localizePage() {
-		for (const node of document.querySelectorAll("[data-i18n]")) {
-			const message = I18N.getMessage(node.dataset.i18n);
-			if (message) { node.textContent = message; }
-		}
-		for (const node of document.querySelectorAll("[data-i18n-value]")) {
-			const message = I18N.getMessage(node.dataset.i18nValue);
-			if (message) { node.value = message; }
-		}
-		for (const node of document.querySelectorAll("[data-i18n-title]")) {
-			const message = I18N.getMessage(node.dataset.i18nTitle);
-			if (message) {
-				node.title = message;
-				node.setAttribute("aria-label", message);
+		const selector = "[data-i18n], [data-i18n-value], [data-i18n-title]";
+		for (const node of document.querySelectorAll(selector)) {
+			const ds = node.dataset;
+			if (ds.i18n !== undefined) {
+				const message = I18N.getMessage(ds.i18n);
+				if (message) { node.textContent = message; }
+			}
+			if (ds.i18nValue !== undefined) {
+				const message = I18N.getMessage(ds.i18nValue);
+				if (message) { node.value = message; }
+			}
+			if (ds.i18nTitle !== undefined) {
+				const message = I18N.getMessage(ds.i18nTitle);
+				if (message) {
+					node.title = message;
+					node.setAttribute("aria-label", message);
+				}
 			}
 		}
 	}

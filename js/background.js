@@ -67,14 +67,18 @@ function t(key, subs) {
 	}
 	let text = entry.message;
 	if (entry.placeholders) {
+		// Optimization: pre-build a case-insensitive lookup dictionary outside the
+		// replacer callback, so each match is an O(1) lookup instead of an O(N)
+		// scan of every placeholder key.
+		const lookup = Object.create(null);
+		for (const key in entry.placeholders) {
+			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+		}
+		// One compiled regex keeps this to a single pass over the string, and the
+		// replacer function avoids $-pattern injection from placeholder content.
 		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 			const lowerName = name.toLowerCase();
-			for (const key in entry.placeholders) {
-				if (key.toLowerCase() === lowerName) {
-					return entry.placeholders[key].content ?? "";
-				}
-			}
-			return match;
+			return lowerName in lookup ? lookup[lowerName] : match;
 		});
 	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
@@ -293,8 +297,8 @@ async function fetchText(method, url, body) {
 
 // Parse a "HH:MM" preference string into minutes since midnight.
 function parseHHMM(value) {
-	const [h, m] = String(value || "0:0").split(":").map(Number);
-	return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+	const [h, m] = String(value || "0:0").split(":");
+	return (Number(h) || 0) * 60 + (Number(m) || 0);
 }
 
 // Whether "now" (local time) falls inside the configured quiet-hours window.
@@ -380,16 +384,16 @@ async function fetchAvatarDataURL(url) {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
-		const contentType = response.headers.get("content-type") || "image/jpeg";
-		const bytes = new Uint8Array(await response.arrayBuffer());
-		let binary = "";
-		// Performance optimization: converting byte array to string in chunks
-		// instead of character-by-character to avoid O(N^2) string concatenation overhead.
-		const CHUNK_SIZE = 8192;
-		for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-			binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK_SIZE));
-		}
-		return `data:${contentType};base64,${btoa(binary)}`;
+		// Performance optimization: let the browser encode the base64 data URL
+		// natively via FileReader.readAsDataURL, instead of copying the whole
+		// blob into a binary string ourselves and re-encoding it with btoa.
+		const blob = await response.blob();
+		return await new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onloadend = () => resolve(reader.result);
+			reader.onerror = () => reject(reader.error);
+			reader.readAsDataURL(blob);
+		});
 	} catch {
 		return null;
 	}

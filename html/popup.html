@@ -32,11 +32,24 @@
 				</div>
 			</div>
 			<div class="message-list" id="messageList">
-				<div class="loading" data-i18n="loading">Loading...</div>
+				<div class="loading" aria-live="polite" aria-busy="true">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;margin:0 auto 12px;color:var(--accent);display:block;" aria-hidden="true">
+						<circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+						<path d="M12 2a10 10 0 0 1 10 10">
+							<animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
+						</path>
+					</svg>
+					<span data-i18n="loading">Loading...</span>
+				</div>
 			</div>
 			<div class="footer">
 				<div class="footer-meta" id="lastChecked"></div>
 				<div class="menu-item primary" id="open" role="button" tabindex="0">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+						<polyline points="15 3 21 3 21 9" />
+						<line x1="10" y1="14" x2="21" y2="3" />
+					</svg>
 					<span data-i18n="openApp">Open VK</span>
 				</div>
 			</div>
