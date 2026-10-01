@@ -113,6 +113,7 @@ function applyDynamicTexts() {
 }
 
 // Persist the form, notify the worker, then re-localize in case lang changed.
+let saveTimeout;
 async function saveForm() {
 	await chrome.storage.local.set({ preference: readForm() });
 	chrome.runtime.sendMessage({ type: "prefsUpdated" });
@@ -120,7 +121,13 @@ async function saveForm() {
 	applyDynamicTexts();
 	const status = $("status");
 	status.textContent = msg("saved");
-	setTimeout(() => { status.textContent = ""; }, 1500);
+	status.classList.add("show");
+	clearTimeout(saveTimeout);
+	saveTimeout = setTimeout(() => {
+		status.classList.remove("show");
+		// Remove text after fade completes to keep screen readers and DOM tidy
+		setTimeout(() => { if (!status.classList.contains("show")) status.textContent = ""; }, 250);
+	}, 2000);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
