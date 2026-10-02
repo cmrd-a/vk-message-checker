@@ -384,16 +384,20 @@ async function fetchAvatarDataURL(url) {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
-		// Performance optimization: let the browser encode the base64 data URL
-		// natively via FileReader.readAsDataURL, instead of copying the whole
-		// blob into a binary string ourselves and re-encoding it with btoa.
-		const blob = await response.blob();
-		return await new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onloadend = () => resolve(reader.result);
-			reader.onerror = () => reject(reader.error);
-			reader.readAsDataURL(blob);
-		});
+		// Manifest V3 service workers do not support FileReader.
+		// Performance optimization: use chunked array processing to build the binary string.
+		// This avoids O(N^2) string concatenation overhead while staying safely below the
+		// maximum call stack size limit of String.fromCharCode.apply.
+		const buffer = await response.arrayBuffer();
+		const bytes = new Uint8Array(buffer);
+		let binary = "";
+		const CHUNK_SIZE = 8192;
+		for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+			binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK_SIZE));
+		}
+
+		const contentType = response.headers.get("content-type") || "image/jpeg";
+		return `data:${contentType};base64,${btoa(binary)}`;
 	} catch {
 		return null;
 	}
