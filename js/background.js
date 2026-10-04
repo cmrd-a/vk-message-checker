@@ -27,6 +27,7 @@ let clickTimer = null;
 let i18nMessages = {};
 let i18nLang = null;
 let lastUnreadCount = -1;
+let lastState = "empty";
 let lastCheckedAt = null;
 let flashTimer = null;
 let cachedToken = null;
@@ -237,6 +238,7 @@ function setChecking() {
 
 // Render the toolbar icon, badge and tooltip for a given check result.
 function applyState(state, count, prefs) {
+	lastState = state;
 	const label = appLabel();
 	chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
 
@@ -626,7 +628,7 @@ chrome.action.onClicked.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message?.type === "getMessages") {
-		const respond = (messages) => sendResponse({ messages, lastCheckedAt, unreadCount: lastUnreadCount });
+		const respond = (messages) => sendResponse({ messages, lastCheckedAt, unreadCount: lastUnreadCount, state: lastState });
 		getPreference().then(prefs => getMessages(prefs)).then(respond).catch(() => respond([]));
 		return true; // Keep the messaging channel open for sendResponse
 	}
