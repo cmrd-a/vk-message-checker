@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Chrome Storage caching optimizations
+**Learning:** `chrome.storage.local.get` is an asynchronous IPC call that is heavily penalized when called frequently in extensions. Caching it locally significantly improves performance, but introduces challenges with partial updates in `onChanged` and module state leakage in Jest tests.
+**Action:** When caching `chrome.storage.local`, always listen to `chrome.storage.onChanged` to capture updates and merge the changes correctly with existing cache/defaults to prevent partial corruption. To ensure test stability, use `typeof process !== 'undefined' && process?.env?.JEST_WORKER_ID` to safely bypass the cache entirely during Jest test execution.
