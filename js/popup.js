@@ -88,6 +88,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 		const headerCount = document.getElementById("headerCount");
 		headerCount.textContent = unreadCount > 0 ? String(unreadCount) : "";
 
+		const openTitle = document.getElementById("openTitle");
+		if (openTitle) {
+			if (unreadCount > 0) {
+				const unreadText = I18N.getMessage("statusUnread", [String(unreadCount)]);
+				openTitle.setAttribute("aria-label", `${I18N.getMessage("appName")} - ${unreadText}`);
+			} else {
+				openTitle.setAttribute("aria-label", I18N.getMessage("appName"));
+			}
+		}
+
 		const lastChecked = document.getElementById("lastChecked");
 		const renderLastChecked = () => {
 			const ago = formatAgo(lastCheckedAt);

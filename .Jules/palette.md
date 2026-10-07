@@ -4,3 +4,6 @@
 ## 2024-05-18 - [Dynamic ARIA labels in Chrome Extension popup and options]
 **Learning:** When populating dynamic DOM elements in Chrome Extension popups and option pages (such as messages from `sendMessage` or custom sliders), standard HTML attributes alone often fall short for screen readers. Using template literals to inject punctuated readable strings into `aria-label` and `title` (for truncated UI elements) significantly improves a11y. Setting `aria-valuetext` explicitly is critical when sliders represent non-linear or formatted values (like time intervals).
 **Action:** When dynamically building list items or rendering custom input elements, ensure screen readers have a flattened, punctuated version of the visible text mapped to `aria-label`, and use `aria-valuetext` for custom ranges.
+## 2025-02-12 - [Dynamic ARIA label for composite buttons]
+**Learning:** When a custom button contains multiple text elements (e.g., an app name and a dynamic unread count badge), screen readers concatenate their text contents. This can result in confusing readouts like "VK Messages 5".
+**Action:** When a button contains a badge or counter, explicitly set a dynamic `aria-label` on the parent button itself that provides context for the number (e.g., "VK Messages - Unread (5)"), utilizing existing localized strings.
