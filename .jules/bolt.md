@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Efficient caching of chrome.storage data
+**Learning:** `chrome.storage.local.get` is an asynchronous API call that involves cross-process communication and thus incurs noticeable latency. In highly trafficked execution paths (e.g., rendering popup elements or checking multiple messages), performing redundant `get` operations creates performance bottlenecks.
+**Action:** Use an in-memory cache variable alongside a `chrome.storage.onChanged` event listener to keep the local cache synced, which turns subsequent reads into fast, synchronous O(1) in-memory checks.
