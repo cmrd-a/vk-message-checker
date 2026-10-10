@@ -86,7 +86,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 		const { messages, lastCheckedAt, unreadCount } = response || {};
 
 		const headerCount = document.getElementById("headerCount");
-		headerCount.textContent = unreadCount > 0 ? String(unreadCount) : "";
+		const openTitle = document.getElementById("openTitle");
+		const getMsg = (key, subs) => typeof I18N !== "undefined" ? I18N.getMessage(key, subs) : null;
+		const appName = getMsg("appName") || "VK Messages";
+		if (unreadCount > 0) {
+			headerCount.textContent = String(unreadCount);
+			const unreadText = getMsg("statusUnread", [String(unreadCount)]) || `Unread (${unreadCount})`;
+			if (openTitle) {
+				openTitle.setAttribute("aria-label", `${appName} - ${unreadText}`);
+			}
+		} else {
+			headerCount.textContent = "";
+			if (openTitle) {
+				openTitle.setAttribute("aria-label", appName);
+			}
+		}
 
 		const lastChecked = document.getElementById("lastChecked");
 		const renderLastChecked = () => {
