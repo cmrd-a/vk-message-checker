@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Storage API Overhead in Chrome Extensions
+**Learning:** `chrome.storage.local.get` is an asynchronous operation that crosses the extension API boundary, incurring significant bridge-communication and serialization overhead. In high-frequency or repeated logic (like checking preferences in background tasks), this causes measurable delays.
+**Action:** Always maintain an in-memory module-level cache for objects like preferences, syncing them reactively via `chrome.storage.onChanged` instead of fetching them on demand. Bypass caching in Jest test environments using `process.env.JEST_WORKER_ID` to prevent state leakage.
