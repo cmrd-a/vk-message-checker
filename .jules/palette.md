@@ -7,3 +7,6 @@
 ## 2024-09-27 - Options Page Landmark Regions and Localized ARIA Labels
 **Learning:** In settings pages, grouping form controls under a generic `<section>` without an explicit link to its header reduces context for screen readers. Using `aria-labelledby` on `<section>` elements pointing to the header `id` creates accessible landmark regions. Additionally, hardcoding English `aria-label`s in HTML breaks accessibility for users of other languages; the extension's custom i18n system (`data-i18n-title`) should be used to provide localized ARIA labels.
 **Action:** Ensure all logically grouped sections in settings forms have `aria-labelledby` linking to their heading. Always use `data-i18n-title` instead of hardcoded `aria-label` attributes for elements requiring screen reader context.
+## 2026-10-13 - Dynamic ARIA Labels for Concatenated Text Elements
+**Learning:** When a custom button or UI element contains multiple text elements (e.g., an app name and a dynamic unread count badge), screen readers often concatenate their text contents awkwardly (e.g., reading "VK Messages 5").
+**Action:** Always set an explicit, dynamic `aria-label` on the parent container or button to provide clean, accurate context (e.g., 'VK Messages - Unread (5)').
