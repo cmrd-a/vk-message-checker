@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-10-14 - Expensive repeated calls to chrome.storage.local.get
+**Learning:** Calling `chrome.storage.local.get` repeatedly, especially in loops or frequently executed functions like `checkNow`, is an expensive asynchronous API call that impacts performance.
+**Action:** Optimize performance by caching preferences locally and keeping them updated via `chrome.storage.onChanged` event listeners instead of making repeated fetch calls. When caching objects, return a copy to prevent consumers from mutating the cache directly, and merge with defaults when updating from storage events.
