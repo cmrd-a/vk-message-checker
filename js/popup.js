@@ -83,10 +83,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	// Fetch and display messages
 	chrome.runtime.sendMessage({ type: "getMessages" }, (response) => {
-		const { messages, lastCheckedAt, unreadCount } = response || {};
+		const { messages, lastCheckedAt, unreadCount, state } = response || {};
 
 		const headerCount = document.getElementById("headerCount");
 		headerCount.textContent = unreadCount > 0 ? String(unreadCount) : "";
+
+		const openTitle = document.getElementById("openTitle");
+		const getMsg = (key, subs) => typeof I18N !== "undefined" ? I18N.getMessage(key, subs) : null;
+		const appName = getMsg("appName") || "VK Messages";
+		if (unreadCount > 0) {
+			const unreadText = getMsg("statusUnread", [String(unreadCount)]) || `Unread (${unreadCount})`;
+			if (openTitle) {
+				openTitle.setAttribute("aria-label", `${appName} - ${unreadText}`);
+			}
+		} else if (openTitle) {
+			openTitle.setAttribute("aria-label", appName);
+		}
 
 		const lastChecked = document.getElementById("lastChecked");
 		const renderLastChecked = () => {
@@ -112,17 +124,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 			iconSvg.setAttribute("stroke-linejoin", "round");
 			iconSvg.setAttribute("aria-hidden", "true");
 
-			const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-			path1.setAttribute("d", "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z");
-
-			const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-			path2.setAttribute("d", "m9 12 2 2 4-4");
-
-			iconSvg.appendChild(path1);
-			iconSvg.appendChild(path2);
-
 			const textSpan = document.createElement("span");
-			textSpan.textContent = I18N.getMessage("statusEmpty") || "No unread messages";
+
+			if (state === "loggedout") {
+				const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+				path.setAttribute("d", "M12 17v-1M15 10V7a3 3 0 0 0-6 0v3M7 10h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z");
+				iconSvg.appendChild(path);
+				textSpan.textContent = I18N.getMessage("statusLoggedOut") || "Logged out";
+			} else if (state === "disconnected" || state === "timeout" || state === "unknown") {
+				const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+				path.setAttribute("d", "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z");
+				iconSvg.appendChild(path);
+				textSpan.textContent = I18N.getMessage(state === "timeout" ? "statusTimeout" : "statusDisconnected") || "Not connected";
+			} else {
+				const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+				path1.setAttribute("d", "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z");
+				const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+				path2.setAttribute("d", "m9 12 2 2 4-4");
+				iconSvg.appendChild(path1);
+				iconSvg.appendChild(path2);
+				textSpan.textContent = I18N.getMessage("statusEmpty") || "No unread messages";
+			}
 
 			div.appendChild(iconSvg);
 			div.appendChild(textSpan);

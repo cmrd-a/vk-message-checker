@@ -27,6 +27,7 @@ let clickTimer = null;
 let i18nMessages = {};
 let i18nLang = null;
 let lastUnreadCount = -1;
+let lastState = "empty";
 let lastCheckedAt = null;
 let flashTimer = null;
 let cachedToken = null;
@@ -237,6 +238,7 @@ function setChecking() {
 
 // Render the toolbar icon, badge and tooltip for a given check result.
 function applyState(state, count, prefs) {
+	lastState = state;
 	const label = appLabel();
 	chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
 
@@ -384,16 +386,20 @@ async function fetchAvatarDataURL(url) {
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
-		// Performance optimization: let the browser encode the base64 data URL
-		// natively via FileReader.readAsDataURL, instead of copying the whole
-		// blob into a binary string ourselves and re-encoding it with btoa.
-		const blob = await response.blob();
-		return await new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onloadend = () => resolve(reader.result);
-			reader.onerror = () => reject(reader.error);
-			reader.readAsDataURL(blob);
-		});
+		// Manifest V3 service workers do not support FileReader.
+		// Performance optimization: use chunked array processing to build the binary string.
+		// This avoids O(N^2) string concatenation overhead while staying safely below the
+		// maximum call stack size limit of String.fromCharCode.apply.
+		const buffer = await response.arrayBuffer();
+		const bytes = new Uint8Array(buffer);
+		let binary = "";
+		const CHUNK_SIZE = 8192;
+		for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+			binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK_SIZE));
+		}
+
+		const contentType = response.headers.get("content-type") || "image/jpeg";
+		return `data:${contentType};base64,${btoa(binary)}`;
 	} catch {
 		return null;
 	}
@@ -626,7 +632,7 @@ chrome.action.onClicked.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message?.type === "getMessages") {
-		const respond = (messages) => sendResponse({ messages, lastCheckedAt, unreadCount: lastUnreadCount });
+		const respond = (messages) => sendResponse({ messages, lastCheckedAt, unreadCount: lastUnreadCount, state: lastState });
 		getPreference().then(prefs => getMessages(prefs)).then(respond).catch(() => respond([]));
 		return true; // Keep the messaging channel open for sendResponse
 	}
