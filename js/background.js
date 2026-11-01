@@ -53,7 +53,26 @@ async function loadMessages(prefs) {
 	if (i18nLang === lang) { return; }
 	try {
 		const response = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
-		i18nMessages = await response.json();
+		const msgs = await response.json();
+
+		// Performance optimization: Pre-compile i18n messages to eliminate
+		// O(N) object creation and regex matching overhead on every string lookup.
+		for (const key in msgs) {
+			const entry = msgs[key];
+			if (entry.placeholders) {
+				const lookup = Object.create(null);
+				for (const p in entry.placeholders) {
+					lookup[p.toLowerCase()] = entry.placeholders[p].content ?? "";
+				}
+				entry.message = entry.message.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
+					const lowerName = name.toLowerCase();
+					return lowerName in lookup ? lookup[lowerName] : match;
+				});
+				delete entry.placeholders;
+			}
+		}
+
+		i18nMessages = msgs;
 		i18nLang = lang;
 	} catch {
 		// Keep whatever messages we already had.
@@ -67,21 +86,6 @@ function t(key, subs) {
 		try { return chrome.i18n.getMessage(key, subs) || key; } catch { return key; }
 	}
 	let text = entry.message;
-	if (entry.placeholders) {
-		// Optimization: pre-build a case-insensitive lookup dictionary outside the
-		// replacer callback, so each match is an O(1) lookup instead of an O(N)
-		// scan of every placeholder key.
-		const lookup = Object.create(null);
-		for (const key in entry.placeholders) {
-			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-		}
-		// One compiled regex keeps this to a single pass over the string, and the
-		// replacer function avoids $-pattern injection from placeholder content.
-		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
-			const lowerName = name.toLowerCase();
-			return lowerName in lookup ? lookup[lowerName] : match;
-		});
-	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
 	text = text.replace(/\$(\d+)/g, (_, n) => args[Number(n) - 1] ?? "");
 	return text;
