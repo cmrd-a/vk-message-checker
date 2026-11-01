@@ -182,6 +182,20 @@ body {
 	stroke-width: 1.5;
 }
 
+.no-messages[role="button"] {
+	cursor: pointer;
+	transition: background 0.12s, color 0.12s;
+}
+
+.no-messages[role="button"]:hover {
+	background: var(--hover);
+	color: var(--text);
+}
+
+.no-messages[role="button"]:active {
+	background: var(--border);
+}
+
 .msg-item {
 	display: flex;
 	flex-direction: column;

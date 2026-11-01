@@ -148,6 +148,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			div.appendChild(iconSvg);
 			div.appendChild(textSpan);
+
+			div.setAttribute("role", "button");
+			div.setAttribute("tabindex", "0");
+			const actionType = (state === "disconnected" || state === "timeout" || state === "unknown") ? "checkNow" : "open";
+			const actionLabel = I18N.getMessage(actionType === "open" ? "openApp" : "checkNow") || (actionType === "open" ? "Open VK" : "Check now");
+			div.setAttribute("aria-label", `${textSpan.textContent}. ${actionLabel}`);
+			div.setAttribute("title", actionLabel);
+
+			makeClickable(div, () => {
+				chrome.runtime.sendMessage({ type: actionType });
+				close();
+			});
+
 			list.appendChild(div);
 			return;
 		}
