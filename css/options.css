@@ -206,7 +206,7 @@ body {
 	transition: filter 0.15s ease, transform 0.05s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:focus-visible {
 	filter: brightness(1.06);
 }
 
