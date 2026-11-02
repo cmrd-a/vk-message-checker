@@ -28,7 +28,19 @@ class I18N {
 	static async #loadLocale(lang) {
 		const url = chrome.runtime.getURL(`_locales/${lang}/messages.json`);
 		const response = await fetch(url);
-		return response.json();
+		const json = await response.json();
+		// Optimization: pre-build case-insensitive lookup dictionaries during load
+		// rather than on every translation lookup.
+		for (const key in json) {
+			const entry = json[key];
+			if (entry.placeholders) {
+				entry.compiledPlaceholders = Object.create(null);
+				for (const pKey in entry.placeholders) {
+					entry.compiledPlaceholders[pKey.toLowerCase()] = entry.placeholders[pKey].content ?? "";
+				}
+			}
+		}
+		return json;
 	}
 
 	// Load the active locale, falling back to English on error.
@@ -49,14 +61,8 @@ class I18N {
 			try { return chrome.i18n.getMessage(key, subs) || key; } catch { return key; }
 		}
 		let text = entry.message;
-		if (entry.placeholders) {
-			// Optimization: pre-build a case-insensitive lookup dictionary outside the
-			// replacer callback, so each match is an O(1) lookup instead of an O(N)
-			// scan of every placeholder key.
-			const lookup = Object.create(null);
-			for (const key in entry.placeholders) {
-				lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-			}
+		if (entry.compiledPlaceholders) {
+			const lookup = entry.compiledPlaceholders;
 			// A single compiled regex keeps this to one pass over the string; the
 			// replacer function (rather than a replacement string) also prevents
 			// $-pattern injection from placeholder content.

@@ -53,7 +53,19 @@ async function loadMessages(prefs) {
 	if (i18nLang === lang) { return; }
 	try {
 		const response = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
-		i18nMessages = await response.json();
+		const json = await response.json();
+		// Optimization: pre-build case-insensitive lookup dictionaries during load
+		// rather than on every translation lookup.
+		for (const key in json) {
+			const entry = json[key];
+			if (entry.placeholders) {
+				entry.compiledPlaceholders = Object.create(null);
+				for (const pKey in entry.placeholders) {
+					entry.compiledPlaceholders[pKey.toLowerCase()] = entry.placeholders[pKey].content ?? "";
+				}
+			}
+		}
+		i18nMessages = json;
 		i18nLang = lang;
 	} catch {
 		// Keep whatever messages we already had.
@@ -67,14 +79,8 @@ function t(key, subs) {
 		try { return chrome.i18n.getMessage(key, subs) || key; } catch { return key; }
 	}
 	let text = entry.message;
-	if (entry.placeholders) {
-		// Optimization: pre-build a case-insensitive lookup dictionary outside the
-		// replacer callback, so each match is an O(1) lookup instead of an O(N)
-		// scan of every placeholder key.
-		const lookup = Object.create(null);
-		for (const key in entry.placeholders) {
-			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-		}
+	if (entry.compiledPlaceholders) {
+		const lookup = entry.compiledPlaceholders;
 		// One compiled regex keeps this to a single pass over the string, and the
 		// replacer function avoids $-pattern injection from placeholder content.
 		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
