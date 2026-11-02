@@ -51,7 +51,7 @@ body {
 	transition: background 0.12s ease;
 }
 
-.menu-item:hover {
+.menu-item:hover, .menu-item:focus-visible {
 	background: var(--hover);
 }
 
@@ -99,7 +99,7 @@ body {
 	transition: background 0.12s ease;
 }
 
-.header-title:hover {
+.header-title:hover, .header-title:focus-visible {
 	background: var(--hover);
 }
 
@@ -139,7 +139,7 @@ body {
 	transition: background 0.12s, color 0.12s;
 }
 
-.icon-btn:hover {
+.icon-btn:hover, .icon-btn:focus-visible {
 	background: var(--hover);
 	color: var(--text);
 }
@@ -193,8 +193,12 @@ body {
 	transition: background 0.12s;
 }
 
-.msg-item:hover {
+.msg-item:hover, .msg-item:focus-visible {
 	background: var(--hover);
+}
+
+.msg-item:active {
+	background: var(--border);
 }
 
 .msg-item.unread .msg-sender {
