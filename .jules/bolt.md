@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Cache Avatar Data URLs
+**Learning:** In js/background.js, the checkNow routine fetches and encodes all avatars to base64 (via fetchAvatarDataURL) every time it fetches messages, without caching. This is a known performance bottleneck that could be optimized by implementing an in-memory avatar cache.
+**Action:** Implement an in-memory `Map` to cache the generated data URLs keyed by the avatar URL. Check this cache before fetching and base64-encoding to prevent redundant processing.
