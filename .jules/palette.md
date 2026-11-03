@@ -7,3 +7,6 @@
 ## 2024-09-27 - Options Page Landmark Regions and Localized ARIA Labels
 **Learning:** In settings pages, grouping form controls under a generic `<section>` without an explicit link to its header reduces context for screen readers. Using `aria-labelledby` on `<section>` elements pointing to the header `id` creates accessible landmark regions. Additionally, hardcoding English `aria-label`s in HTML breaks accessibility for users of other languages; the extension's custom i18n system (`data-i18n-title`) should be used to provide localized ARIA labels.
 **Action:** Ensure all logically grouped sections in settings forms have `aria-labelledby` linking to their heading. Always use `data-i18n-title` instead of hardcoded `aria-label` attributes for elements requiring screen reader context.
+## 2026-11-03 - Consistent Keyboard & Mouse Interaction Feedback
+**Learning:** When styling custom buttons or interactive menu items with hover states, relying solely on standard focus outlines creates a visual disparity between mouse users and keyboard users. Keyboard navigation should provide the same level of polish and visual feedback (e.g. background highlights) as mouse hover states, rather than just an outline.
+**Action:** Always group `:focus-visible` with `:hover` selectors when defining interaction states for custom interactive elements to ensure visual parity.
