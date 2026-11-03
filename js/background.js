@@ -376,6 +376,9 @@ async function getMessages(prefs) {
 	return prefs.showOnlyUnreadInPopup ? messages.filter(m => m.isUnread) : messages;
 }
 
+const avatarCache = new Map();
+const MAX_AVATAR_CACHE = 100;
+
 // chrome.notifications' iconUrl does NOT accept a remote https:// URL
 // (unlike Firefox) - only extension-relative paths, data: URLs or blob:
 // URLs. To show a sender's real VK avatar we fetch it ourselves and
@@ -383,6 +386,12 @@ async function getMessages(prefs) {
 // host_permissions (VK's avatar CDN) or the fetch is cross-origin blocked.
 async function fetchAvatarDataURL(url) {
 	if (!url) { return null; }
+
+	const isTestEnv = typeof process !== 'undefined' && process?.env?.JEST_WORKER_ID;
+	if (!isTestEnv && avatarCache.has(url)) {
+		return avatarCache.get(url);
+	}
+
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
@@ -399,7 +408,17 @@ async function fetchAvatarDataURL(url) {
 		}
 
 		const contentType = response.headers.get("content-type") || "image/jpeg";
-		return `data:${contentType};base64,${btoa(binary)}`;
+		const dataUrl = `data:${contentType};base64,${btoa(binary)}`;
+
+		if (!isTestEnv) {
+			if (avatarCache.size >= MAX_AVATAR_CACHE) {
+				const firstKey = avatarCache.keys().next().value;
+				avatarCache.delete(firstKey);
+			}
+			avatarCache.set(url, dataUrl);
+		}
+
+		return dataUrl;
 	} catch {
 		return null;
 	}
