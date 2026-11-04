@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Optimizing i18n translation functions
+**Learning:** Re-compiling a regex and re-building a placeholder lookup dictionary inside a hot-path function (like `getMessage` or `t()`) for every translation request causes unnecessary overhead, especially on initial page load when strings are requested in bulk.
+**Action:** Move the pre-compilation step (regex replacement) into the cold-path initialization logic (e.g., when the messages.json is first loaded over the network) by mutating the parsed JSON payload, so that all subsequent lookups only perform a simple read or a minimal runtime argument replacement.
