@@ -53,7 +53,23 @@ async function loadMessages(prefs) {
 	if (i18nLang === lang) { return; }
 	try {
 		const response = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
-		i18nMessages = await response.json();
+		const messages = await response.json();
+		// Optimization: pre-compile placeholder string replacements during the initial
+		// load so they aren't repeatedly evaluated on every single translation lookup.
+		for (const key in messages) {
+			const entry = messages[key];
+			if (entry && entry.message && entry.placeholders) {
+				const lookup = Object.create(null);
+				for (const pKey in entry.placeholders) {
+					lookup[pKey.toLowerCase()] = entry.placeholders[pKey].content ?? "";
+				}
+				entry.message = entry.message.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
+					const lowerName = name.toLowerCase();
+					return lowerName in lookup ? lookup[lowerName] : match;
+				});
+			}
+		}
+		i18nMessages = messages;
 		i18nLang = lang;
 	} catch {
 		// Keep whatever messages we already had.
@@ -67,21 +83,6 @@ function t(key, subs) {
 		try { return chrome.i18n.getMessage(key, subs) || key; } catch { return key; }
 	}
 	let text = entry.message;
-	if (entry.placeholders) {
-		// Optimization: pre-build a case-insensitive lookup dictionary outside the
-		// replacer callback, so each match is an O(1) lookup instead of an O(N)
-		// scan of every placeholder key.
-		const lookup = Object.create(null);
-		for (const key in entry.placeholders) {
-			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-		}
-		// One compiled regex keeps this to a single pass over the string, and the
-		// replacer function avoids $-pattern injection from placeholder content.
-		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
-			const lowerName = name.toLowerCase();
-			return lowerName in lookup ? lookup[lowerName] : match;
-		});
-	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
 	text = text.replace(/\$(\d+)/g, (_, n) => args[Number(n) - 1] ?? "");
 	return text;
