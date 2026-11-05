@@ -19,6 +19,7 @@ const AVAILABLE_LANGS = ["en", "ru"];
 
 // In-memory (non-persistent) state.
 const iconCache = { color: null, "mono-light": null, "mono-dark": null };
+const avatarCache = new Map();
 let darkTheme = false;
 let lastIconActive = null;
 let checking = false;
@@ -383,6 +384,7 @@ async function getMessages(prefs) {
 // host_permissions (VK's avatar CDN) or the fetch is cross-origin blocked.
 async function fetchAvatarDataURL(url) {
 	if (!url) { return null; }
+	if (avatarCache.has(url)) { return avatarCache.get(url); }
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
@@ -399,7 +401,13 @@ async function fetchAvatarDataURL(url) {
 		}
 
 		const contentType = response.headers.get("content-type") || "image/jpeg";
-		return `data:${contentType};base64,${btoa(binary)}`;
+		const dataUrl = `data:${contentType};base64,${btoa(binary)}`;
+		avatarCache.set(url, dataUrl);
+		if (avatarCache.size > 50) {
+			const firstKey = avatarCache.keys().next().value;
+			avatarCache.delete(firstKey);
+		}
+		return dataUrl;
 	} catch {
 		return null;
 	}
