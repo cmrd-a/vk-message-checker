@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Avatar Data URL Caching
+**Learning:** `chrome.notifications` requires avatars as data URLs, meaning `fetchAvatarDataURL` previously downloaded and base64-encoded avatar images on every single unread message notification, causing unnecessary network I/O and CPU overhead.
+**Action:** Implement an in-memory `Map` cache (max 50 entries) for avatar data URLs in `fetchAvatarDataURL`. This eliminates redundant network requests and array-buffer-to-base64 conversions for repeat senders, reducing processing time and memory churn per background check.
