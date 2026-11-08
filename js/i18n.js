@@ -39,6 +39,18 @@ class I18N {
 		} catch {
 			I18N.#messages = await I18N.#loadLocale("en").catch(() => ({}));
 		}
+
+		// Performance optimization: Pre-compile placeholder lookup dictionaries
+		// during load instead of evaluating them on every translation lookup.
+		for (const entry of Object.values(I18N.#messages)) {
+			if (entry.placeholders) {
+				entry.lookup = Object.create(null);
+				for (const key in entry.placeholders) {
+					entry.lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+				}
+			}
+		}
+
 		return lang;
 	}
 
@@ -50,19 +62,13 @@ class I18N {
 		}
 		let text = entry.message;
 		if (entry.placeholders) {
-			// Optimization: pre-build a case-insensitive lookup dictionary outside the
-			// replacer callback, so each match is an O(1) lookup instead of an O(N)
-			// scan of every placeholder key.
-			const lookup = Object.create(null);
-			for (const key in entry.placeholders) {
-				lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-			}
 			// A single compiled regex keeps this to one pass over the string; the
 			// replacer function (rather than a replacement string) also prevents
 			// $-pattern injection from placeholder content.
+			// Uses the pre-compiled lookup dictionary for O(1) retrieval.
 			text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 				const lowerName = name.toLowerCase();
-				return lowerName in lookup ? lookup[lowerName] : match;
+				return lowerName in entry.lookup ? entry.lookup[lowerName] : match;
 			});
 		}
 		const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
