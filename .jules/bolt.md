@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-05-24 - Pre-computing i18n lookup dictionaries
+**Learning:** Building placeholder lookup dictionaries on every `getMessage` or `t` call is inefficient, especially since they are mostly static after the locale is loaded.
+**Action:** Pre-compute lookup dictionaries for placeholders when the messages payload is first loaded, storing them on the message entry for O(1) retrieval during string replacement.

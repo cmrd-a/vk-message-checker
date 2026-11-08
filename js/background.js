@@ -54,6 +54,18 @@ async function loadMessages(prefs) {
 	try {
 		const response = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
 		i18nMessages = await response.json();
+
+		// Performance optimization: Pre-compile placeholder lookup dictionaries
+		// during load instead of evaluating them on every translation lookup.
+		for (const entry of Object.values(i18nMessages)) {
+			if (entry.placeholders) {
+				entry.lookup = Object.create(null);
+				for (const key in entry.placeholders) {
+					entry.lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
+				}
+			}
+		}
+
 		i18nLang = lang;
 	} catch {
 		// Keep whatever messages we already had.
@@ -68,18 +80,12 @@ function t(key, subs) {
 	}
 	let text = entry.message;
 	if (entry.placeholders) {
-		// Optimization: pre-build a case-insensitive lookup dictionary outside the
-		// replacer callback, so each match is an O(1) lookup instead of an O(N)
-		// scan of every placeholder key.
-		const lookup = Object.create(null);
-		for (const key in entry.placeholders) {
-			lookup[key.toLowerCase()] = entry.placeholders[key].content ?? "";
-		}
 		// One compiled regex keeps this to a single pass over the string, and the
 		// replacer function avoids $-pattern injection from placeholder content.
+		// Uses the pre-compiled lookup dictionary for O(1) retrieval.
 		text = text.replace(/\$([a-zA-Z0-9_]+)\$/gi, (match, name) => {
 			const lowerName = name.toLowerCase();
-			return lowerName in lookup ? lookup[lowerName] : match;
+			return lowerName in entry.lookup ? entry.lookup[lowerName] : match;
 		});
 	}
 	const args = subs == null ? [] : Array.isArray(subs) ? subs : [subs];
