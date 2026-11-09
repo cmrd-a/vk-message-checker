@@ -32,6 +32,8 @@ let lastCheckedAt = null;
 let flashTimer = null;
 let cachedToken = null;
 let tokenExpiresAt = 0;
+const avatarCache = new Map();
+const MAX_AVATAR_CACHE_SIZE = 50;
 
 
 //================================================
@@ -383,6 +385,9 @@ async function getMessages(prefs) {
 // host_permissions (VK's avatar CDN) or the fetch is cross-origin blocked.
 async function fetchAvatarDataURL(url) {
 	if (!url) { return null; }
+	if (avatarCache.has(url)) {
+		return avatarCache.get(url);
+	}
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
@@ -399,7 +404,13 @@ async function fetchAvatarDataURL(url) {
 		}
 
 		const contentType = response.headers.get("content-type") || "image/jpeg";
-		return `data:${contentType};base64,${btoa(binary)}`;
+		const dataUrl = `data:${contentType};base64,${btoa(binary)}`;
+		avatarCache.set(url, dataUrl);
+		if (avatarCache.size > MAX_AVATAR_CACHE_SIZE) {
+			// Remove the oldest entry
+			avatarCache.delete(avatarCache.keys().next().value);
+		}
+		return dataUrl;
 	} catch {
 		return null;
 	}
