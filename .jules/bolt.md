@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding dynamic RegExp creation inside loops for placeholders
 **Learning:** Instantiating a new `RegExp` object inside a loop (e.g., iterating through a `placeholders` object to replace values in a string) incurs heavy O(N) regex creations and causes multiple passes over the string.
 **Action:** Use a single compiled regex to find placeholders (like `/\$([a-zA-Z0-9_]+)\$/gi`) coupled with a replacer function that looks up the matching key. This cuts down regex instantiations to just one and makes only a single pass over the string.
+## 2024-11-10 - Bounded Maps for in-memory object caching
+**Learning:** When repeatedly making identical network calls for static assets that are then computationally transformed (like base64 encoding), caching the processed result rather than the raw data provides significant CPU savings. In background scripts, memory is constrained, so a bounded `Map` (enforcing a size limit by deleting the oldest entry using `map.delete(map.keys().next().value)`) prevents memory leaks while preserving the performance benefit.
+**Action:** Use a bounded `Map` to cache the final output of expensive I/O operations (like fetching and encoding avatar data URLs) when duplicate inputs are expected within the script's lifecycle.
