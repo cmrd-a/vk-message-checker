@@ -381,8 +381,17 @@ async function getMessages(prefs) {
 // URLs. To show a sender's real VK avatar we fetch it ourselves and
 // convert it to a data URL first. Requires *.vkuserphoto.ru in
 // host_permissions (VK's avatar CDN) or the fetch is cross-origin blocked.
+
+// Performance optimization: Cache avatar data URLs in memory to prevent redundant
+// network requests and base64-encoding overhead during repeated message checks.
+const avatarCache = new Map();
+const MAX_AVATAR_CACHE_SIZE = 50;
+
 async function fetchAvatarDataURL(url) {
 	if (!url) { return null; }
+	if (avatarCache.has(url)) {
+		return avatarCache.get(url);
+	}
 	try {
 		const response = await fetch(url);
 		if (!response.ok) { return null; }
@@ -399,7 +408,15 @@ async function fetchAvatarDataURL(url) {
 		}
 
 		const contentType = response.headers.get("content-type") || "image/jpeg";
-		return `data:${contentType};base64,${btoa(binary)}`;
+		const dataUrl = `data:${contentType};base64,${btoa(binary)}`;
+
+		avatarCache.set(url, dataUrl);
+		if (avatarCache.size > MAX_AVATAR_CACHE_SIZE) {
+			const firstKey = avatarCache.keys().next().value;
+			avatarCache.delete(firstKey);
+		}
+
+		return dataUrl;
 	} catch {
 		return null;
 	}
